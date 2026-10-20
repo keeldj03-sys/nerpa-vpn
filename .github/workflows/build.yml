@@ -15,7 +15,7 @@ on:
 env:
   IS_GITHUB_ACTIONS: 1
   CHANNEL: "${{ inputs.channel }}"
-  FLUTTER_VERSION: '3.38.5'
+  FLUTTER_VERSION: '3.44.8'
   NDK_VERSION: r28c
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   TAG_NAME: "${{ inputs.tag-name }}"
@@ -72,13 +72,51 @@ jobs:
         with:
           platform: ${{ matrix.aarch }}
 
+      - name: Setup Java
+        if: matrix.target == 'android'
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android NDK
+        if: matrix.target == 'android'
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28
+
+      - name: Setup Node
+        if: matrix.target == 'android'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Build core
         working-directory: hiddify-core
         env:
           GOOS: ${{ matrix.target == 'windows-amd64' && 'windows' || 'linux' }}
           GOARCH: ${{ matrix.arch }}
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
-          make ${{ matrix.target }}
+          # gomobile and gobind are installed by the core Makefile into
+          # $(go env GOPATH)/bin, which is not on the PATH by default.
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+          # The module proxy drops connections from time to time. Retry the
+          # download so a flaky network does not fail the whole build.
+          for attempt in 1 2 3; do
+            if make ${{ matrix.target }}; then
+              echo "core built on attempt $attempt"
+              break
+            fi
+            if [ "$attempt" = "3" ]; then
+              echo "core build failed after 3 attempts"
+              exit 1
+            fi
+            echo "attempt $attempt failed, retrying in 30s"
+            sleep 30
+          done
           echo "--- core artifacts ---"
           find bin -type f | head -20
 
@@ -95,6 +133,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # The proto files live in the hiddify-core submodule, and the
+          # code generation reads them.
+          submodules: 'recursive'
       - uses: subosito/flutter-action@v2.21.0 #issue with 2.13
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -102,7 +144,10 @@ jobs:
           cache: true
           
       - name: Prepare
-        run: make linux-amd64-prepare
+        # The tests only need the generated code and the translations, not
+        # the core library. Building the core here would only slow the
+        # test job down, and the "core" job builds it for the app.
+        run: make common-prepare
       - name: Test
         run: flutter test
 
