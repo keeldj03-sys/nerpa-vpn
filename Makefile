@@ -49,11 +49,25 @@ CORE_PRODUCT_NAME=hiddify-core
 CORE_NAME=hiddify-lib
 LIB_NAME=hiddify-core
 
+# Where the core library is taken from.
+#
+# CORE_SOURCE=local builds the core from the hiddify-core submodule, so the
+# Nerpa core fixes (user rule-sets, per-group outbound selection) are part of
+# the build. CORE_SOURCE=download fetches the prebuilt binaries published by
+# hiddify/hiddify-core instead.
+#
+# local is the default, because the upstream binaries do not carry the Nerpa
+# core changes. Set CORE_SOURCE=download to build against upstream instead.
+CORE_SOURCE?=local
+
 ifeq ($(CHANNEL),prod)
 	CORE_URL=https://github.com/hiddify/hiddify-core/releases/download/v$(core.version)
 else
 	CORE_URL=https://github.com/hiddify/hiddify-core/releases/download/draft
 endif
+
+# The fork that carries the Nerpa core changes. Only used by the local build.
+CORE_REPO=https://github.com/keeldj03-sys/hiddify-core.git
 
 ifeq ($(CHANNEL),prod)
 	TARGET=lib/main_prod.dart
@@ -470,25 +484,46 @@ ios-release: #not tested
 	fastforge package --platform ios --targets ipa --build-export-options-plist  ios/exportOptions.plist $(DISTRIBUTOR_ARGS)
 
 android-libs:
+ifeq ($(CORE_SOURCE),local)
+	$(MAKE) build-android-libs
+	@if [ ! -f "$(ANDROID_OUT)/$(LIB_NAME).aar" ]; then \
+		echo "local core aar unavailable, falling back to the upstream build"; \
+		$(MKDIR) $(ANDROID_OUT) || echo Folder already exists. Skipping...; \
+		curl -L $(CORE_URL)/$(CORE_NAME)-android.tar.gz | tar xz -C $(ANDROID_OUT)/; \
+	fi
+else
 	$(MKDIR) $(ANDROID_OUT) || echo Folder already exists. Skipping...
 	curl -L $(CORE_URL)/$(CORE_NAME)-android.tar.gz | tar xz -C $(ANDROID_OUT)/
+endif
 
 android-apk-libs: android-libs
 android-aab-libs: android-libs
 
 windows-libs:
+ifeq ($(CORE_SOURCE),local)
+	$(MAKE) build-windows-libs
+else
 	$(MKDIR) $(DESKTOP_OUT) || echo Folder already exists. Skipping...
 	curl -L $(CORE_URL)/$(CORE_NAME)-windows-amd64.tar.gz | tar xz -C $(DESKTOP_OUT)/
 	ls $(DESKTOP_OUT) || dir $(DESKTOP_OUT)/
+endif
 	
 
 linux-amd64-libs:
+ifeq ($(CORE_SOURCE),local)
+	$(MAKE) build-linux-libs
+else
 	mkdir -p $(DESKTOP_OUT)
 	curl -L $(CORE_URL)/$(CORE_NAME)-linux-amd64.tar.gz | tar xz -C $(DESKTOP_OUT)/
+endif
 
 linux-arm64-libs:
+ifeq ($(CORE_SOURCE),local)
+	$(MAKE) build-linux-arm64-libs
+else
 	mkdir -p $(DESKTOP_OUT)
 	curl -L $(CORE_URL)/$(CORE_NAME)-linux-arm64.tar.gz | tar xz -C $(DESKTOP_OUT)/
+endif
 
 linux-amd64-musl-libs:
 	mkdir -p $(DESKTOP_OUT)
@@ -500,8 +535,12 @@ linux-arm64-musl-libs:
 
 
 macos-libs:
+ifeq ($(CORE_SOURCE),local)
+	$(MAKE) build-macos-libs
+else
 	mkdir -p  $(DESKTOP_OUT) 
 	curl -L $(CORE_URL)/$(CORE_NAME)-macos.tar.gz | tar xz -C $(DESKTOP_OUT)
+endif
 
 ios-libs: #not tested
 	mkdir -p $(IOS_OUT)
@@ -517,22 +556,59 @@ build-headers:
 	make -C hiddify-core -f Makefile headers && mv $(BINDIR)/$(CORE_NAME)-headers.h $(BINDIR)/hiddify-core.h
 
 build-android-libs:
-	make -C hiddify-core -f Makefile android 
-	mv $(BINDIR)/$(LIB_NAME).aar $(ANDROID_OUT)/
+	@if [ -f "$(BINDIR)/$(LIB_NAME).aar" ]; then \
+		echo "core aar already built, skipping"; \
+	else \
+		make -C hiddify-core -f Makefile android; \
+		mv $(BINDIR)/$(LIB_NAME).aar $(ANDROID_OUT)/; \
+	fi
 
 build-windows-libs:
-	make -C hiddify-core -f Makefile windows-amd64
+	@if [ -f "$(BINDIR)/$(LIB_NAME).dll" ]; then \
+		echo "core dll already built, skipping"; \
+	else \
+		make -C hiddify-core -f Makefile windows-amd64; \
+	fi
 
 build-linux-libs:
-	make -C hiddify-core -f Makefile linux-amd64 
+	@if [ -f "$(BINDIR)/lib/$(LIB_NAME).so" ]; then \
+		echo "core so already built, skipping"; \
+	else \
+		make -C hiddify-core -f Makefile linux-amd64; \
+	fi
+
+build-linux-arm64-libs:
+	@if [ -f "$(BINDIR)/lib/$(LIB_NAME).so" ]; then \
+		echo "core so already built, skipping"; \
+	else \
+		make -C hiddify-core -f Makefile linux-arm64; \
+	fi
 
 build-macos-libs:
-	make -C hiddify-core -f Makefile macos
+	@if [ -f "$(BINDIR)/$(LIB_NAME).dylib" ]; then \
+		echo "core dylib already built, skipping"; \
+	else \
+		make -C hiddify-core -f Makefile macos; \
+	fi
 
 build-ios-libs: 
 	rm -rf $(IOS_OUT)/HiddifyCore.xcframework 
 	make -C hiddify-core -f Makefile ios  
 	mv $(BINDIR)/HiddifyCore.xcframework $(IOS_OUT)/HiddifyCore.xcframework
+
+# ── Core build for CI ──
+# These targets build the core library from the hiddify-core submodule.
+# CI calls them before "<platform>-prepare", so the app is linked against
+# the core built here instead of the prebuilt upstream binaries.
+.PHONY: windows-core-libs linux-core-libs linux-amd64-core-libs linux-arm64-core-libs macos-core-libs android-core-libs android-apk-core-libs
+
+windows-core-libs: build-windows-libs
+linux-core-libs: build-linux-libs
+linux-amd64-core-libs: build-linux-libs
+linux-arm64-core-libs: build-linux-arm64-libs
+macos-core-libs: build-macos-libs
+android-core-libs: build-android-libs
+android-apk-core-libs: build-android-libs
 
 release: # Create a new tag for release.
 	@CORE_VERSION=$(core.version) bash -c ".github/change_version.sh "

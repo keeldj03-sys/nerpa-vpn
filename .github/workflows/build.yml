@@ -34,6 +34,61 @@ env:
   
 
 jobs:
+  core:
+    name: Build core
+    # The core is built from the hiddify-core submodule, so the app is
+    # linked against our own core. The upstream prebuilt binaries do not
+    # carry the Nerpa core changes (user rule-sets, per-group outbound
+    # selection).
+    #
+    # The core is built on Linux for every target, including Windows:
+    # the core Makefile drives shell scripts and a cronet toolchain, and
+    # cross-compiling from Linux is what hiddify-core does upstream.
+    permissions: write-all
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: 'hiddify-lib-linux-amd64', target: 'linux-amd64', arch: 'amd64' }
+          - { name: 'hiddify-lib-windows-amd64', target: 'windows-amd64', aarch: 'x64' }
+          - { name: 'hiddify-lib-android', target: 'android', arch: 'arm64' }
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'hiddify-core/go.mod'
+          check-latest: false
+
+      - name: Setup MinGW
+        if: endsWith(matrix.target,'windows-amd64')
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: ${{ matrix.aarch }}
+
+      - name: Build core
+        working-directory: hiddify-core
+        env:
+          GOOS: ${{ matrix.target == 'windows-amd64' && 'windows' || 'linux' }}
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          make ${{ matrix.target }}
+          echo "--- core artifacts ---"
+          find bin -type f | head -20
+
+      - name: Upload core
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-${{ matrix.name }}
+          path: hiddify-core/bin
+          retention-days: 1
+
   test:
     outputs:
       draftBuildCode: ${{ steps.draftBuildCode.outputs.datetime }}
@@ -57,7 +112,7 @@ jobs:
 
 
   build:
-    needs: test
+    needs: [test, core]
     permissions: write-all
     continue-on-error: true
 
@@ -68,6 +123,7 @@ jobs:
           - platform: android-apk
             os: ubuntu-latest
             targets: apk
+            core_artifact: hiddify-lib-linux-amd64
 
           # - platform: android-aab
           #   os: ubuntu-latest
@@ -77,11 +133,13 @@ jobs:
             os: windows-latest
             aarch: amd64
             targets: exe,msix,zip
+            core_artifact: hiddify-lib-windows-amd64
 
           - platform: linux
             os: ubuntu-22.04
             aarch: amd64
             targets: deb,gz,AppImage
+            core_artifact: hiddify-lib-linux-amd64
 
           # - platform: linux-amd64
           #   os: ubuntu-22.04
@@ -117,6 +175,12 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v6
+        with:
+          # The core comes from the "core" job, built from the hiddify-core
+          # submodule. The submodules are not needed here, but the proto
+          # files are, and they live in the same submodule.
+          submodules: 'recursive'
+          fetch-depth: 0
 
       - name: Import Apple Codesign Certificates
         if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
@@ -250,6 +314,15 @@ jobs:
 
 
 
+
+      - name: Download core
+        # The core was built by the "core" job from our own submodule. The
+        # app is linked against that build, so the Nerpa core changes are
+        # part of the shipped binary.
+        uses: actions/download-artifact@v4
+        with:
+          name: core-${{ matrix.core_artifact }}
+          path: hiddify-core/bin
 
       - name: Prepare for ${{ matrix.platform }}
         run: |
