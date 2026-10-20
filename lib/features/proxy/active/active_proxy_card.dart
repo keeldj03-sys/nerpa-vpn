@@ -125,7 +125,32 @@ class ActiveServerInfoRow extends ConsumerWidget {
 
           const Gap(8),
 
-          const Icon(Icons.chevron_right_rounded, color: AppTheme.nerpaTextMuted, size: 18),
+          // ── Change node ──
+          // The chevron alone reads as "expand the list", but the tap opens
+          // the node picker. The label says what the tap does.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.nerpaAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppTheme.nerpaAccent.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  t.pages.proxies.changeNode,
+                  style: const TextStyle(
+                    color: AppTheme.nerpaAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                const Icon(Icons.chevron_right_rounded, color: AppTheme.nerpaAccent, size: 16),
+              ],
+            ),
+          ),
         ],
       ),
     );

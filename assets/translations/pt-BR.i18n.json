@@ -128,7 +128,8 @@
         "result": "Latência: ${delay}ms",
         "timeout": "Tempo limite do teste de latência esgotado",
         "testing": "Latência: testando…"
-      }
+      },
+      "changeNode": "Trocar nó"
     },
     "profiles": {
       "title": "Perfis",

@@ -128,7 +128,8 @@
         "result": "Latencia: ${delay}ms",
         "timeout": "Tiempo de prueba de latencia agotado",
         "testing": "Latencia: probando…"
-      }
+      },
+      "changeNode": "Cambiar nodo"
     },
     "profiles": {
       "title": "Perfiles",

@@ -126,11 +126,10 @@ class ProfileTile extends HookConsumerWidget {
                         : ProfileTileConst.cardBorderRadius,
                     onTap: () {
                       if (isMain) {
-                        if (Breakpoint(context).isMobile()) {
-                          ref.read(bottomSheetsNotifierProvider.notifier).showProfilesOverview();
-                        } else {
-                          context.goNamed('profiles');
-                        }
+                        // The home card shows the active profile. Tapping it
+                        // opens the profile list, where picking a profile
+                        // switches to it in one tap — on every platform.
+                        ref.read(bottomSheetsNotifierProvider.notifier).showProfilesOverview();
                       } else {
                         if (selectActiveMutation.state.isInProgress) return;
                         selectActiveMutation.setFuture(

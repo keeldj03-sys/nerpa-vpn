@@ -128,7 +128,8 @@
         "result": "延遲：${delay}毫秒",
         "timeout": "延遲測試超時",
         "testing": "延遲：測試中…"
-      }
+      },
+      "changeNode": "更換節點"
     },
     "profiles": {
       "title": "設定檔",

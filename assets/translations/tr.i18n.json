@@ -128,7 +128,8 @@
         "result": "Gecikme: ${delay}ms",
         "timeout": "Gecikme testi zaman aşımına uğradı",
         "testing": "Gecikme: test ediliyor…"
-      }
+      },
+      "changeNode": "Düğümü değiştir"
     },
     "profiles": {
       "title": "Profiller",

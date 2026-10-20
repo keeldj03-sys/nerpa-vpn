@@ -113,6 +113,7 @@
       "searchHint": "Search servers, countries or providers...",
       "activeProxy": "Active proxy",
       "changeFailed": "Failed to switch the server",
+      "changeNode": "Change node",
       "unknownIp": "Unknown IP",
       "switchFailed": "Couldn’t switch to this proxy. Try again.",
       "sortOptions": {

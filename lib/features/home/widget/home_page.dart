@@ -10,6 +10,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:nerpa_vpn/core/app_info/app_info_provider.dart';
 import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
 import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
 import 'package:nerpa_vpn/core/theme/app_theme.dart';
@@ -17,6 +18,8 @@ import 'package:nerpa_vpn/features/chain/model/chain_enum.dart';
 import 'package:nerpa_vpn/features/connection/model/connection_status.dart';
 import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_button.dart';
+import 'package:nerpa_vpn/features/home/widget/connection_stats_row.dart';
+import 'package:nerpa_vpn/features/home/widget/connection_timer.dart';
 import 'package:nerpa_vpn/features/profile/data/selected_outbound_store.dart';
 import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
 import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
@@ -117,6 +120,14 @@ class HomePage extends HookConsumerWidget {
                               ConnectionButton(),
 
                               Gap(28),
+
+                              // Traffic counters
+                              const ConnectionStatsRow(),
+
+                              const Gap(10),
+
+                              // How long the tunnel has been up
+                              const ConnectionTimer(),
                             ],
                           ),
                         ),
@@ -134,7 +145,16 @@ class HomePage extends HookConsumerWidget {
               bottom: 0,
               left: 0,
               right: 0,
-              child: _QuickSettingsBar(t: t, ref: ref),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+                child: Row(
+                  children: [
+                    Expanded(child: _QuickSettingsBar(t: t, ref: ref)),
+                    const Gap(10),
+                    _LogsButton(t: t),
+                  ],
+                ),
+              ),
             ),
 
           // ── App bar поверх видео ──
@@ -159,7 +179,9 @@ class _NerpaAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final connectionStatus = ref.watch(connectionNotifierProvider);
-    final statusMeta = _buildStatusMeta(t, connectionStatus);
+    // The ping of the active node decides whether the tunnel really works.
+    final delay = ref.watch(activeProxyNotifierProvider).valueOrNull?.urlTestDelay;
+    final statusMeta = _buildStatusMeta(t, connectionStatus, delay);
 
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -336,39 +358,37 @@ class _QuickSettingsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(26),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF16292F),
-              const Color(0xFF101E23),
-              const Color(0xFF0A1316),
-            ],
-          ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 30, offset: const Offset(0, 16)),
-            BoxShadow(color: AppTheme.nerpaAccent.withValues(alpha: 0.05), blurRadius: 30, spreadRadius: -10),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF16292F),
+            const Color(0xFF101E23),
+            const Color(0xFF0A1316),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(26),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(26),
-                onTap: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  child: Row(
-                    children: [
+        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 30, offset: const Offset(0, 16)),
+          BoxShadow(color: AppTheme.nerpaAccent.withValues(alpha: 0.05), blurRadius: 30, spreadRadius: -10),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(26),
+              onTap: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
                       Container(
                         width: 42,
                         height: 42,
@@ -415,6 +435,50 @@ class _QuickSettingsBar extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+    );
+  }
+}
+
+/// Кнопка быстрого доступа к логам. На мобильном в сайдбаре логов нет,
+/// поэтому на главной нужна своя точка входа.
+class _LogsButton extends StatelessWidget {
+  const _LogsButton({required this.t});
+
+  final Translations t;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: t.pages.logs.title,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(26),
+          onTap: () => context.goNamed('logs'),
+          child: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF16292F),
+                  Color(0xFF0A1316),
+                ],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 12)),
+              ],
+            ),
+            child: const Center(
+              child: Icon(Icons.receipt_long_rounded, size: 21, color: AppTheme.nerpaAccent),
             ),
           ),
         ),
@@ -675,12 +739,25 @@ String? _buildModeLabel(WidgetRef ref, Translations t, ChainStatus chainStatus) 
 _TopBarStatusMeta _buildStatusMeta(
   Translations t,
   AsyncValue<ConnectionStatus> connectionStatus,
+  int? delay,
 ) {
   final status = connectionStatus.valueOrNull;
 
   // Статус показывает состояние туннеля. Задержка вынесена в отдельную
   // соседнюю пилюлю ActiveProxyDelayIndicator, чтобы значения не дублировались.
   if (status is Connected) {
+    // The core reports the tunnel as up before the node answers, and a node
+    // that stopped answering keeps the tunnel "up" while carrying no traffic.
+    // The pill follows the node, not the socket: a dead node is not online.
+    if (delay != null && delay > 0 && !ConnectionConst.isValidDelay(delay)) {
+      return const _TopBarStatusMeta(
+        title: 'Статус',
+        value: 'No signal',
+        caption: 'Узел не отвечает',
+        color: AppTheme.nerpaError,
+      );
+    }
+
     return const _TopBarStatusMeta(
       title: 'Статус',
       value: 'Online',

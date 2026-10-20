@@ -128,7 +128,8 @@
         "result": "Latensi: ${delay}ms",
         "timeout": "Waktu tes latensi habis",
         "testing": "Latensi: sedang menguji…"
-      }
+      },
+      "changeNode": "Ganti node"
     },
     "profiles": {
       "title": "Profil",
