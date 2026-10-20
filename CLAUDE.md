@@ -1,4 +1,24 @@
-# Hiddify App — Claude project instructions
+# Nerpa VPN — Claude project instructions
+
+## Repository layout
+
+This is a fork of the hiddify-app, rebranded to **Nerpa VPN** (Dart package `nerpa_vpn`).
+
+The build spans four repositories, all under the `keeldj03-sys` GitHub account:
+
+| Repo | Path in the working tree | Branch | What it carries |
+|---|---|---|---|
+| `keeldj03-sys/nerpa-vpn` | this repo | `main` / `feature/nerpa-ui` | The Flutter app |
+| `keeldj03-sys/hiddify-core` | `hiddify-core/` (submodule) | `feature/nerpa-routing-fixes` | The Go core (sing-box) |
+| `keeldj03-sys/hiddify-sing-box` | `hiddify-core/hiddify-sing-box/` | `feature/nerpa-core-compat` | The sing-box fork |
+| `keeldj03-sys/ray2sing` | `hiddify-core/ray2sing/` | `feature/nerpa-placeholder-filter` | The v2Ray converter |
+| `keeldj03-sys/psiphon-tls` | `hiddify-core/hiddify-sing-box/replace/psiphon-tls/` | `master` | TLS fork (Go 1.26 fix) |
+
+A change in one of them needs the submodule pointer of its parent updated and committed
+alongside it — the core is built from source, so a stale pointer means a stale build.
+
+**Submodule URLs must stay https.** GitHub's SSH form (`git@github.com:...`) breaks
+`git clone --recurse-submodules` for anyone without an SSH key.
 
 ## Controlling the app
 
