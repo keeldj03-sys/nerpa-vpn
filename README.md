@@ -150,6 +150,26 @@ git submodule update --init --recursive
 Building the core needs Go and CMake; the core is compiled from source, so a change in
 `hiddify-core` needs a rebuild of its own.
 
+### The core: our fork or upstream
+
+By default the core is built from our fork (`keeldj03-sys/hiddify-core`), so the build
+carries the Nerpa core changes — the user rule-sets and the per-group outbound
+selection:
+
+```bash
+make windows-prepare   # builds the core from hiddify-core/ and then the app
+```
+
+To build the app against the prebuilt upstream binaries instead (without the Nerpa
+core changes):
+
+```bash
+make windows-prepare CORE_SOURCE=download
+```
+
+CI does the same in a separate `core` job: it builds the core for Linux, Windows and
+Android and hands it to the app build step as an artifact.
+
 ## 🌎 Translations
 
     

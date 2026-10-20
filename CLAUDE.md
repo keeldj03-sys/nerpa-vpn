@@ -20,6 +20,21 @@ alongside it — the core is built from source, so a stale pointer means a stale
 **Submodule URLs must stay https.** GitHub's SSH form (`git@github.com:...`) breaks
 `git clone --recurse-submodules` for anyone without an SSH key.
 
+## Building the core
+
+The core is a Go library that the app links against. `make <platform>-prepare` builds it
+from the `hiddify-core` submodule by default, so the Nerpa core changes are part of the
+build. `make <platform>-prepare CORE_SOURCE=download` fetches the prebuilt upstream
+binaries instead, which do **not** have those changes.
+
+The core Makefile drives shell scripts and the cronet toolchain, so the core is built on
+Linux even for the Windows target (hiddify-core cross-compiles the same way). Building it
+needs the `-checklinkname=0` linker flag — the core Makefile already sets it, but a
+manual `go build` without it fails on `runtime/pprof.parseProcSelfMaps`.
+
+A clone with `--depth 1` checks the nested submodules out at their branch heads instead
+of the pinned commits. Run `git submodule update --init --recursive` after such a clone.
+
 ## Controlling the app
 
 flutter_driver can drive the running app, but only when the `driver` flag is set. Debug builds only.

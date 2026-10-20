@@ -136,6 +136,22 @@ git submodule update --init --recursive
 
 Сборка ядра требует Go и CMake; ядро собирается из исходников, поэтому после изменения `hiddify-core` нужно пересобрать и его.
 
+### Ядро: из форка или из upstream
+
+По умолчанию ядро собирается из нашего форка (`keeldj03-sys/hiddify-core`), поэтому в сборку попадают правки Nerpa — пользовательские rule-set и корректный выбор outbound для каждой группы:
+
+```bash
+make windows-prepare   # соберёт ядро из hiddify-core/ и приложение
+```
+
+Собрать приложение на готовых бинарниках upstream (без правок Nerpa) можно так:
+
+```bash
+make windows-prepare CORE_SOURCE=download
+```
+
+В CI то же самое делает отдельная job `core`: она собирает ядро под Linux, Windows и Android и отдаёт его шагу сборки приложения как артефакт.
+
 ## 🌎 Переводы
 
 Улучшайте существующие языки или добавляйте новые, вручную редактируя JSON-файлы, расположенные в `/assets/translations`, или используя [Онлайн редактор Inlang](https://fink.inlang.com/editor/github.com/hiddify/hiddify-app)
