@@ -41,19 +41,21 @@ jobs:
     # carry the Nerpa core changes (user rule-sets, per-group outbound
     # selection).
     #
-    # The core is built on Linux for every target, including Windows:
-    # the core Makefile drives shell scripts and a cronet toolchain, and
-    # cross-compiling from Linux is what hiddify-core does upstream.
+    # The core is built on Linux for the Linux, Windows and Android
+    # targets: the core Makefile drives shell scripts and the cronet
+    # toolchain, and cross-compiling from Linux is what hiddify-core does
+    # upstream. The macOS target needs the Apple toolchain (darwin clang,
+    # lipo), so it is built on a macOS runner instead.
     permissions: write-all
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: 'hiddify-lib-linux-amd64', target: 'linux-amd64', arch: 'amd64' }
-          - { name: 'hiddify-lib-windows-amd64', target: 'windows-amd64', aarch: 'x64' }
-          - { name: 'hiddify-lib-android', target: 'android', arch: 'arm64' }
-          - { name: 'hiddify-lib-macos', target: 'macos', arch: 'amd64' }
+          - { name: 'hiddify-lib-linux-amd64', target: 'linux-amd64', arch: 'amd64', os: 'ubuntu-22.04' }
+          - { name: 'hiddify-lib-windows-amd64', target: 'windows-amd64', aarch: 'x64', os: 'ubuntu-22.04' }
+          - { name: 'hiddify-lib-android', target: 'android', arch: 'arm64', os: 'ubuntu-22.04' }
+          - { name: 'hiddify-lib-macos', target: 'macos', arch: 'amd64', os: 'macos-15' }
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -72,6 +74,13 @@ jobs:
         uses: egor-tensin/setup-mingw@v2
         with:
           platform: ${{ matrix.aarch }}
+
+      - name: Setup macOS tools
+        if: matrix.target == 'macos'
+        run: |
+          # The core Makefile uses the GNU coreutils, which the macOS runner
+          # does not provide by default.
+          brew install coreutils
 
       - name: Setup Java
         if: matrix.target == 'android'
