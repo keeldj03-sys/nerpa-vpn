@@ -268,7 +268,7 @@ jobs:
         env:
           HAS_CERT: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
         run: |
-          if [ -z "$HAS_CERT" ]; then
+          if [ "$HAS_CERT" != "true" ]; then
             echo "no Apple certificate, building unsigned"
             exit 0
           fi
@@ -384,7 +384,7 @@ jobs:
         env:
           HAS_KEY: ${{ secrets.ANDROID_SIGNING_KEY != '' }}
         run: |
-          if [ -z "$HAS_KEY" ]; then
+          if [ "$HAS_KEY" != "true" ]; then
             echo "no Android signing key, building unsigned"
             exit 0
           fi
@@ -402,7 +402,7 @@ jobs:
         env:
           HAS_CERT: ${{ secrets.WINDOWS_SIGNING_KEY != '' }}
         run: |
-            if (-not $env:HAS_CERT) {
+            if ($env:HAS_CERT -ne "true") {
                 Write-Host "no Windows signing certificate, building unsigned"
                 exit 0
             }
@@ -454,7 +454,7 @@ jobs:
           SIGN_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
           HAS_CERT: ${{ secrets.WINDOWS_SIGNING_KEY != '' }}
         run: |
-          if (-not $env:HAS_CERT) {
+          if ($env:HAS_CERT -ne "true") {
             Write-Host "no Windows signing certificate, skipping the signing"
             exit 0
           }
