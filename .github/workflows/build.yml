@@ -53,6 +53,7 @@ jobs:
           - { name: 'hiddify-lib-linux-amd64', target: 'linux-amd64', arch: 'amd64' }
           - { name: 'hiddify-lib-windows-amd64', target: 'windows-amd64', aarch: 'x64' }
           - { name: 'hiddify-lib-android', target: 'android', arch: 'arm64' }
+          - { name: 'hiddify-lib-macos', target: 'macos', arch: 'amd64' }
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -243,6 +244,7 @@ jobs:
             os: macos-15
             aarch: universal
             targets: dmg,pkg
+            core_artifact: hiddify-lib-macos
             
           # - platform: ios
           #   os: macos-15
