@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:hiddify/core/model/environment.dart';
-import 'package:hiddify/utils/platform_utils.dart';
+import 'package:nerpa_vpn/core/model/environment.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:loggy/loggy.dart';
 import 'package:path/path.dart' as p;

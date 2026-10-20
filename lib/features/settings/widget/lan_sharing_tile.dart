@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
-import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/hiddifycore/hiddify_core_service_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LanSharingPreferenceWidget extends HookConsumerWidget {
@@ -45,8 +45,10 @@ class LanSharingPreferenceWidget extends HookConsumerWidget {
           ),
           if (ref.watch(ConfigOptions.allowConnectionFromLan)) ...[
             const Gap(12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -64,7 +66,6 @@ class LanSharingPreferenceWidget extends HookConsumerWidget {
                     style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
                   ),
                 ),
-                const Gap(10),
                 ElevatedButton.icon(
                   onPressed: () async {
                     final link = await getSharingLink();

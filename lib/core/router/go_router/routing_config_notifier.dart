@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/adaptive_layout/my_adaptive_layout.dart';
-import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
-import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
-import 'package:hiddify/core/router/go_router/helper/custom_transition.dart';
-import 'package:hiddify/core/router/go_router/refresh_listenable.dart';
-import 'package:hiddify/features/about/widget/about_page.dart';
-import 'package:hiddify/features/home/widget/home_page.dart';
-import 'package:hiddify/features/intro/widget/intro_page.dart';
-import 'package:hiddify/features/log/overview/logs_page.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_page.dart';
-import 'package:hiddify/features/profile/details/profile_details_page.dart';
-import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
-import 'package:hiddify/features/profile/overview/profiles_page.dart';
-import 'package:hiddify/features/proxy/overview/proxies_overview_page.dart';
-import 'package:hiddify/features/route_rules/notifier/rule_notifier.dart';
-import 'package:hiddify/features/route_rules/overview/generic_list_page.dart';
-import 'package:hiddify/features/route_rules/overview/rule_page.dart';
-import 'package:hiddify/features/settings/overview/sections/chain_options_page.dart';
-import 'package:hiddify/features/settings/overview/sections/dns_options_page.dart';
-import 'package:hiddify/features/settings/overview/sections/general_page.dart';
-import 'package:hiddify/features/settings/overview/sections/inbound_options_page.dart';
-import 'package:hiddify/features/settings/overview/sections/routing_options_page.dart';
-import 'package:hiddify/features/settings/overview/sections/tls_tricks_page.dart';
-import 'package:hiddify/features/settings/overview/settings_page.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/core/router/adaptive_layout/my_adaptive_layout.dart';
+import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
+import 'package:nerpa_vpn/core/router/go_router/helper/active_breakpoint_notifier.dart';
+import 'package:nerpa_vpn/core/router/go_router/helper/custom_transition.dart';
+import 'package:nerpa_vpn/core/router/go_router/refresh_listenable.dart';
+import 'package:nerpa_vpn/features/about/widget/about_page.dart';
+import 'package:nerpa_vpn/features/hard_reset/hard_reset_service.dart';
+import 'package:nerpa_vpn/features/home/widget/home_page.dart';
+import 'package:nerpa_vpn/features/intro/widget/intro_page.dart';
+import 'package:nerpa_vpn/features/log/overview/logs_page.dart';
+import 'package:nerpa_vpn/features/per_app_proxy/overview/per_app_proxy_page.dart';
+import 'package:nerpa_vpn/features/profile/details/profile_details_page.dart';
+import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
+import 'package:nerpa_vpn/features/profile/overview/profiles_page.dart';
+import 'package:nerpa_vpn/features/proxy/overview/proxies_overview_page.dart';
+import 'package:nerpa_vpn/features/route_rules/notifier/rule_notifier.dart';
+import 'package:nerpa_vpn/features/route_rules/overview/generic_list_page.dart';
+import 'package:nerpa_vpn/features/route_rules/overview/rule_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/chain_options_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/dns_options_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/general_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/inbound_options_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/routing_options_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/sections/tls_tricks_page.dart';
+import 'package:nerpa_vpn/features/settings/overview/settings_page.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'routing_config_notifier.g.dart';
@@ -85,6 +86,13 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
         if (!ref.read(Preferences.introCompleted)) {
           // Intro is not completed
           return url != null ? '/intro?url=$url' : '/intro';
+        } else if (url != null && Uri.parse(url).scheme == 'nerpa' && Uri.parse(url).host == 'control') {
+          // Control deep link, e.g. nerpa://control/hard-reset
+          final uri = Uri.parse(url);
+          if (uri.path.contains('hard-reset')) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => ref.read(hardResetServiceProvider).reset());
+          }
+          return '/home';
         } else if (state.matchedLocation == '/intro') {
           // Intro is completed
           // Current page in '/intro'

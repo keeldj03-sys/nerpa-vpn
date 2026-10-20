@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:hiddify/features/log/data/log_data_providers.dart';
-import 'package:hiddify/features/log/model/log_entity.dart';
-import 'package:hiddify/features/log/model/log_level.dart';
-import 'package:hiddify/features/log/overview/logs_overview_state.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
-import 'package:hiddify/utils/riverpod_utils.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/features/log/data/log_data_providers.dart';
+import 'package:nerpa_vpn/features/log/model/log_entity.dart';
+import 'package:nerpa_vpn/features/log/model/log_level.dart';
+import 'package:nerpa_vpn/features/log/overview/logs_overview_state.dart';
+import 'package:nerpa_vpn/hiddifycore/init_signal.dart';
+import 'package:nerpa_vpn/utils/riverpod_utils.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -20,17 +20,22 @@ class LogsOverviewNotifier extends _$LogsOverviewNotifier with AppLogger {
     state = const LogsOverviewState();
     ref.onDispose(() {
       loggy.debug("disposing");
+      _disposed = true;
       _listener?.cancel();
       _listener = null;
     });
     ref.onCancel(() {
+      _providerPaused = true;
       if (_listener?.isPaused != true) {
         loggy.debug("pausing");
         _listener?.pause();
       }
     });
     ref.onResume(() {
-      if (!state.paused && (_listener?.isPaused ?? false)) {
+      _providerPaused = false;
+      if (_listener == null && !_disposed) {
+        _addListeners();
+      } else if (!state.paused && (_listener?.isPaused ?? false)) {
         loggy.debug("resuming");
         _listener?.resume();
       }
@@ -41,16 +46,20 @@ class LogsOverviewNotifier extends _$LogsOverviewNotifier with AppLogger {
   }
 
   StreamSubscription? _listener;
+  bool _disposed = false;
+  bool _providerPaused = false;
 
   Future<void> _addListeners() async {
+    if (_disposed || _providerPaused) return;
     loggy.debug("adding listeners");
     ref.watch(coreRestartSignalProvider);
     await _listener?.cancel();
+    if (_disposed || _providerPaused) return;
     _listener = ref
         .read(logRepositoryProvider)
         .requireValue
         .watchLogs()
-        .throttle((_) => Stream.value(_listener?.isPaused ?? false), leading: false, trailing: true)
+        .throttle((_) => Stream<bool>.value(_listener?.isPaused ?? false), leading: false, trailing: true)
         .throttleTime(const Duration(milliseconds: 250), leading: false, trailing: true)
         .asyncMap((event) async {
           await event.fold(
@@ -65,6 +74,10 @@ class LogsOverviewNotifier extends _$LogsOverviewNotifier with AppLogger {
           );
         })
         .listen((event) {});
+    if (_disposed || _providerPaused) {
+      await _listener?.cancel();
+      _listener = null;
+    }
   }
 
   Iterable<LogEntity> _logs = [];

@@ -1,17 +1,18 @@
 import 'dart:io';
 
-import 'package:hiddify/core/haptic/haptic_service.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/connection/data/connection_data_providers.dart';
-import 'package:hiddify/features/connection/data/connection_repository.dart';
-import 'package:hiddify/features/connection/model/connection_failure.dart';
-import 'package:hiddify/features/connection/model/connection_status.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/haptic/haptic_service.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/features/connection/data/connection_data_providers.dart';
+import 'package:nerpa_vpn/features/connection/data/connection_repository.dart';
+import 'package:nerpa_vpn/features/connection/model/connection_failure.dart';
+import 'package:nerpa_vpn/features/connection/model/connection_status.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
+import 'package:nerpa_vpn/features/profile/overview/active_profile_outbounds_provider.dart';
+import 'package:nerpa_vpn/hiddifycore/init_signal.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -58,6 +59,14 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     yield* _connectionRepo.watchConnectionStatus().doOnData((event) {
       if (event case Disconnected(connectionFailure: final _?) when PlatformUtils.isDesktop) {
         Future.microtask(() => ref.read(Preferences.startedByUser.notifier).update(false));
+      }
+      if (event is Connected) {
+        // Узел, выбранный в приложении (в том числе без подключения), применяем
+        // к ядру сразу после старта: конфиг каждый раз собирается заново.
+        final profileId = ref.read(activeProfileProvider).valueOrNull?.id;
+        if (profileId != null) {
+          Future.microtask(() => applySavedOutbound(ref, profileId));
+        }
       }
       loggy.info("connection status: ${event.format()}");
     });

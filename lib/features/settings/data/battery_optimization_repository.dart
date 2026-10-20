@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
-import 'package:hiddify/core/utils/exception_handler.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/utils/exception_handler.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 import 'package:loggy/loggy.dart';
 
 abstract interface class BatteryOptimizationRepository {

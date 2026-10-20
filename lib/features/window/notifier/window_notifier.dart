@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:tray_manager/tray_manager.dart';
@@ -23,7 +23,7 @@ class WindowNotifier extends _$WindowNotifier with AppLogger {
 
     // if (Platform.isWindows) {
     //   loggy.debug("ensuring single instance");
-    //   await WindowsSingleInstance.ensureSingleInstance([], "Hiddify");
+    //   await WindowsSingleInstance.ensureSingleInstance([], "Nerpa VPN");
     // }
 
     await windowManager.ensureInitialized();
@@ -67,12 +67,9 @@ class WindowNotifier extends _$WindowNotifier with AppLogger {
       await windowManager.maximize();
       loggy.debug("restoring window to maximized state");
     }
-    if (!silentStart) {
-      await ref.read(windowNotifierProvider.notifier).show(focus: false);
-      loggy.debug("showing app window on start");
-    } else {
-      loggy.debug("silent start, remain hidden accessible via tray");
-    }
+    // Window is shown via native Win32 SetNextFrameCallback in flutter_window.cpp
+    // window_manager.show() is intentionally skipped to avoid invisible window bug
+    loggy.debug("showing app window on start (via native Win32)");
   }
 
   Future<bool> checkWindowVisivility(Offset windowPos, Size windowSize, {double tolerance = 10.0}) async {

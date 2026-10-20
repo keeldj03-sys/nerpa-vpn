@@ -4,14 +4,14 @@ import 'dart:io';
 import 'package:dartx/dartx.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hiddify/core/db/db.dart';
-import 'package:hiddify/core/http_client/dio_http_client.dart';
-import 'package:hiddify/features/profile/data/profile_data_mapper.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/model/profile_failure.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
-import 'package:hiddify/singbox/model/singbox_proxy_type.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/db/db.dart';
+import 'package:nerpa_vpn/core/http_client/dio_http_client.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_mapper.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_failure.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/singbox/model/singbox_proxy_type.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:meta/meta.dart';
 
@@ -50,6 +50,10 @@ class ProfileParser {
     'profile-update-interval',
     'support-url',
     'profile-web-page-url',
+    // v2RayTun parity: provider announcements (e.g. maintenance notices,
+    // "try servers marked LTE") sent as base64 in the `announce` header.
+    'announce',
+    'announce-url',
     'enable-warp',
     'enable-psiphon',
     'enable-fragment',

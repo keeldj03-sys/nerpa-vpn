@@ -1,7 +1,7 @@
 import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hiddify/features/connection/model/connection_failure.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/features/connection/model/connection_failure.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 
 part 'core_status.freezed.dart';
 

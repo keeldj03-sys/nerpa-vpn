@@ -71,3 +71,11 @@ windows/sign.cer
 .aider.input.history
 .aider.chat.history.md
 .aider.tags.cache.v4
+
+# Локальные рабочие артефакты Nerpa VPN
+/tool/
+*.bak
+windows/installer/*.exe
+analyze_home.txt
+build_windows*.txt
+targeted_analyze_result.txt

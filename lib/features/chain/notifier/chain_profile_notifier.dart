@@ -1,9 +1,9 @@
-import 'package:hiddify/features/chain/model/chain_enum.dart';
-import 'package:hiddify/features/profile/data/profile_data_providers.dart';
-import 'package:hiddify/features/profile/data/profile_repository.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/features/chain/model/chain_enum.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_providers.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_repository.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'chain_profile_notifier.g.dart';

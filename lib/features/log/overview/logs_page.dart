@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/failures.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/widget/adaptive_icon.dart';
-import 'package:hiddify/features/log/data/log_data_providers.dart';
-import 'package:hiddify/features/log/model/log_level.dart';
-import 'package:hiddify/features/log/overview/logs_overview_notifier.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/failures.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/core/widget/adaptive_icon.dart';
+import 'package:nerpa_vpn/features/log/data/log_data_providers.dart';
+import 'package:nerpa_vpn/features/log/model/log_level.dart';
+import 'package:nerpa_vpn/features/log/overview/logs_overview_notifier.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -140,6 +140,11 @@ class LogsPage extends HookConsumerWidget with PresLogger {
               reverse: true,
               slivers: <Widget>[
                 switch (state.logs) {
+                  AsyncData(value: final logs) when logs.isEmpty => SliverBodyPlaceholder([
+                    const Icon(FluentIcons.document_bullet_list_20_regular, size: 42),
+                    const Gap(12),
+                    Text('Логи отсутствуют'),
+                  ]),
                   AsyncData(value: final logs) => SliverList.builder(
                     itemCount: logs.length,
                     itemBuilder: (context, index) {

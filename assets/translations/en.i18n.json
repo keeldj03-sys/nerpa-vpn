@@ -1,6 +1,6 @@
-﻿{
+{
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "Start",
     "version": "Version",
     "ok": "OK",
@@ -95,7 +95,7 @@
   "intro": {
     "banner": "All you need for an unrestricted internet",
     "termsAndPolicyCaution(rich)": "By continuing you agree to ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Made with ❤️ by Hiddify - ${tap_source(Open Source)} (${tap_license(License)})"
+    "info(rich)": "Made with ❤️ by Nerpa VPN - ${tap_source(Open Source)} (${tap_license(License)})"
   },
   "pages": {
     "home": {
@@ -107,8 +107,10 @@
       "sort": "Sort proxies",
       "testDelay": "Test delay",
       "empty": "No proxies available",
+      "searchHint": "Search servers, countries or providers...",
       "activeProxy": "Active proxy",
       "unknownIp": "Unknown IP",
+      "changeFailed": "Failed to switch the server",
       "sortOptions": {
         "unsorted": "Default",
         "name": "Alphabetically",
@@ -137,6 +139,7 @@
       "freeSubNotFoundForRegion": "No free subscription was found for \"${region}\" region.",
       "failedToLoad": "Failed to load",
       "updateSubscriptions": "Update subscriptions",
+      "importV2raytun": "Import from v2RayTun",
       "share": {
         "urlToClipboard": "URL to clipboard",
         "showUrlQr": "Show URL QR",
@@ -158,6 +161,12 @@
         },
         "delete": {
           "success": "Profile deleted successfully"
+        },
+        "importV2raytun": {
+          "started": "Importing subscriptions from v2RayTun...",
+          "success": "Imported ${count} subscription(s)",
+          "failure": "Failed to import subscriptions",
+          "notFound": "v2RayTun data not found on this device"
         }
       }
     },
@@ -192,6 +201,12 @@
     "settings": {
       "title": "Settings",
       "resetTunnel": "Reset VPN profile",
+      "hardReset": {
+        "title": "Hard reset",
+        "message": "Clear the geo/rule-set cache, the last generated config and crash reports? Profiles and settings are kept.",
+        "success": "Cache cleared. Reconnect to continue.",
+        "failure": "Failed to clear the cache"
+      },
       "options": {
         "import": {
           "clipboard": "Import options from clipboard",
@@ -397,6 +412,13 @@
             "name": "Bypass LAN",
             "description": ""
           }
+        },
+        "presets": {
+          "title": "Presets",
+          "empty": "No presets available",
+          "loadError": "Failed to load presets",
+          "applied": "Preset \"${name}\" applied",
+          "rulesCount(count)": "${count} rules"
         }
       },
       "dns": {

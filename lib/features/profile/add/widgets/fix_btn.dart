@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
+import 'package:nerpa_vpn/core/router/go_router/helper/active_breakpoint_notifier.dart';
+import 'package:nerpa_vpn/core/theme/app_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class FixBtn extends ConsumerWidget {
@@ -15,8 +16,7 @@ class FixBtn extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isMobile = Breakpoint(context).isMobile();
-    final color = theme.colorScheme.primary;
-    final borderRadius = BorderRadius.circular(18);
+    final borderRadius = BorderRadius.circular(isMobile ? 14 : 12);
 
     return Expanded(
       child: InkWell(
@@ -25,21 +25,37 @@ class FixBtn extends ConsumerWidget {
         child: Container(
           alignment: Alignment.center,
           height: height,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 6, horizontal: 4),
           decoration: BoxDecoration(
+            color: AppTheme.nerpaSurface.withOpacity(0.92),
             borderRadius: borderRadius,
-            border: Border.all(color: theme.colorScheme.outlineVariant),
+            border: Border.all(color: AppTheme.nerpaBorder.withOpacity(0.7)),
+            boxShadow: [BoxShadow(color: AppTheme.nerpaAccent.withOpacity(0.04), blurRadius: 14)],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: isMobile ? 32 : 40, color: color),
-              Gap(isMobile ? 4 : 8),
+              Container(
+                padding: EdgeInsets.all(isMobile ? 8 : 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.nerpaAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(isMobile ? 12 : 8),
+                ),
+                child: Icon(icon, size: isMobile ? 25 : 24, color: AppTheme.nerpaAccent),
+              ),
+              Gap(isMobile ? 4 : 6),
               Text(
                 title,
                 style: isMobile
-                    ? theme.textTheme.titleSmall!.copyWith(color: color)
-                    : theme.textTheme.titleMedium!.copyWith(color: color),
+                    ? theme.textTheme.titleSmall!.copyWith(
+                        color: AppTheme.nerpaTextPrimary,
+                        fontWeight: FontWeight.w600,
+                      )
+                    : theme.textTheme.labelLarge!.copyWith(
+                        color: AppTheme.nerpaTextPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),

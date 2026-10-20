@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:hiddify/core/db/converters/duration_converter.dart';
-import 'package:hiddify/core/db/db.steps.dart';
-import 'package:hiddify/core/directories/directories_provider.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/db/converters/duration_converter.dart';
+import 'package:nerpa_vpn/core/db/db.steps.dart';
+import 'package:nerpa_vpn/core/directories/directories_provider.dart';
+import 'package:nerpa_vpn/features/per_app_proxy/model/per_app_proxy_mode.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 
 part 'db.g.dart';
 

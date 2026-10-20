@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/features/chain/model/chain_enum.dart';
-import 'package:hiddify/features/chain/overview/chain_mode_icon.dart';
-import 'package:hiddify/features/chain/overview/chain_mode_menu.dart';
-import 'package:hiddify/features/common/custom_text_scroll.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/features/chain/model/chain_enum.dart';
+import 'package:nerpa_vpn/features/chain/overview/chain_mode_icon.dart';
+import 'package:nerpa_vpn/features/chain/overview/chain_mode_menu.dart';
+import 'package:nerpa_vpn/features/common/custom_text_scroll.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ChainModeButton extends HookConsumerWidget {

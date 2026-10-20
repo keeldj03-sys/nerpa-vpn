@@ -1,12 +1,12 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// font_awesome_flutter removed — using FluentUI + Material icons instead
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/notifier/profile_notifier.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +16,7 @@ class ProfileTileMain extends HookConsumerWidget {
   final ProfileEntity profile;
   final bool isMain;
   static const verifiedDomains = [
-    'hiddify.com',
+    'nerpa-vpn.app',
     // 't.me',
     // 'telegram.me',
     // 'instagram.com',
@@ -149,7 +149,7 @@ class ProfileTileMain extends HookConsumerWidget {
                                 onTap: () => _launchUrlWithCheck(context, ref, subInfo.supportUrl!),
                                 borderRadius: BorderRadius.circular(8),
                                 child: _InfoItem(
-                                  icon: _getLinkIcon(subInfo.supportUrl!, FontAwesomeIcons.headset),
+                                  icon: _getLinkIcon(subInfo.supportUrl!, FluentIcons.headset_vr_24_regular),
                                   label: t.components.subscriptionInfo.profileSupport,
                                   value: _formatSupportLink(subInfo.supportUrl!),
                                 ),
@@ -172,19 +172,16 @@ class ProfileTileMain extends HookConsumerWidget {
     final host = uri.host.toLowerCase();
 
     if (host.endsWith('telegram.me') || host.endsWith('t.me')) {
-      return FontAwesomeIcons.telegram;
+      return FluentIcons.send_24_regular;
     }
     if (host.endsWith('instagram.com')) {
-      return FontAwesomeIcons.instagram;
+      return FluentIcons.camera_24_regular;
     }
-    if (host.endsWith('twitter.com')) {
-      return FontAwesomeIcons.xTwitter;
+    if (host.endsWith('twitter.com') || host.endsWith('x.com')) {
+      return FluentIcons.chat_24_regular; // icon pack 1.1.273 has no at_mention_24_regular
     }
     if (host.endsWith('facebook.com')) {
-      return FontAwesomeIcons.facebook;
-    }
-    if (host.endsWith('hiddify.com')) {
-      // return IconData();
+      return FluentIcons.people_community_24_regular;
     }
     return icon ?? FluentIcons.link_24_regular;
   }
@@ -205,8 +202,8 @@ class ProfileTileMain extends HookConsumerWidget {
     if (host.endsWith('facebook.com')) {
       return uri.pathSegments.lastWhere((e) => e.isNotEmpty, orElse: () => '');
     }
-    if (host.endsWith('hiddify.com')) {
-      return "Hiddify";
+    if (host.endsWith('nerpa-vpn.app')) {
+      return "Nerpa VPN";
     }
     return uri.host;
   }

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "Начать",
     "version": "Версия",
     "ok": "OK",
@@ -99,7 +99,7 @@
   "intro": {
     "banner": "Все, что вам нужно для интернета без ограничений",
     "termsAndPolicyCaution(rich)": "Продолжая, вы соглашаетесь с ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Сделано с ❤️ Hiddify - ${tap_source(Открытый исходный код)} (${tap_license(Лицензия)})"
+    "info(rich)": "Сделано с ❤️ Nerpa VPN - ${tap_source(Открытый исходный код)} (${tap_license(Лицензия)})"
   },
   "pages": {
     "home": {
@@ -111,8 +111,10 @@
       "sort": "Сортировать прокси",
       "testDelay": "Проверить задержку",
       "empty": "Нет доступных прокси",
+      "searchHint": "Поиск серверов, стран или провайдеров...",
       "activeProxy": "Активный прокси",
       "unknownIp": "Неизвестный IP",
+      "changeFailed": "Не удалось переключить сервер",
       "sortOptions": {
         "unsorted": "По умолчанию",
         "name": "По алфавиту",
@@ -141,6 +143,7 @@
       "freeSubNotFoundForRegion": "Бесплатная подписка для региона \"${region}\" не найдена",
       "failedToLoad": "Не удалось загрузить",
       "updateSubscriptions": "Обновить подписки",
+      "importV2raytun": "Импорт из v2RayTun",
       "share": {
         "urlToClipboard": "URL в буфер обмена",
         "showUrlQr": "Показать QR-код URL",
@@ -162,6 +165,12 @@
         },
         "delete": {
           "success": "Профиль успешно удален"
+        },
+        "importV2raytun": {
+          "started": "Импорт подписок из v2RayTun...",
+          "success": "Импортировано подписок: ${count}",
+          "failure": "Не удалось импортировать подписки",
+          "notFound": "Данные v2RayTun на этом устройстве не найдены"
         }
       }
     },
@@ -196,6 +205,12 @@
     "settings": {
       "title": "Настройки",
       "resetTunnel": "Сбросить профиль VPN",
+      "hardReset": {
+        "title": "Жёсткий сброс",
+        "message": "Очистить кеш гео-баз и наборов правил, последний сгенерированный конфиг и отчёты об ошибках? Профили и настройки сохранятся.",
+        "success": "Кеш очищен. Переподключитесь, чтобы продолжить.",
+        "failure": "Не удалось очистить кеш"
+      },
       "options": {
         "import": {
           "clipboard": "Импортировать настройки из буфера обмена",
@@ -401,6 +416,13 @@
             "name": "Обход LAN",
             "description": ""
           }
+        },
+        "presets": {
+          "title": "Пресеты",
+          "empty": "Нет доступных пресетов",
+          "loadError": "Не удалось загрузить пресеты",
+          "applied": "Пресет «${name}» применен",
+          "rulesCount(count)": "${count} правил"
         }
       },
       "dns": {
@@ -731,3 +753,4 @@
     }
   }
 }
+

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "Começar",
     "version": "Versão",
     "ok": "OK",
@@ -95,7 +95,7 @@
   "intro": {
     "banner": "Tudo o que você precisa para uma internet sem restrições",
     "termsAndPolicyCaution(rich)": "Ao continuar, você concorda com os ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Feito com ❤️ por Hiddify - ${tap_source(Código Aberto)} (${tap_license(Licença)})"
+    "info(rich)": "Feito com ❤️ por Nerpa VPN - ${tap_source(Código Aberto)} (${tap_license(Licença)})"
   },
   "pages": {
     "home": {
@@ -727,3 +727,4 @@
     }
   }
 }
+

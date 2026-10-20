@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hiddify/core/http_client/dio_http_client.dart';
-import 'package:hiddify/core/utils/exception_handler.dart';
-import 'package:hiddify/features/proxy/model/ip_info_entity.dart' as oldipinfo;
+import 'package:nerpa_vpn/core/http_client/dio_http_client.dart';
+import 'package:nerpa_vpn/core/utils/exception_handler.dart';
+import 'package:nerpa_vpn/features/proxy/model/ip_info_entity.dart' as oldipinfo;
 
-import 'package:hiddify/features/proxy/model/proxy_failure.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/hiddifycore/hiddify_core_service.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/features/proxy/model/proxy_failure.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/hiddifycore/hiddify_core_service.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 
 abstract interface class ProxyRepository {
   // Stream<Either<ProxyFailure, List<OutboundGroup>>> watchProxies();
@@ -68,11 +68,21 @@ class ProxyRepositoryImpl with ExceptionHandler, InfraLogger implements ProxyRep
   }
 
   @override
-  Stream<Either<ProxyFailure, List<OutboundGroup>>> watchActiveProxies() {
-    return singbox.watchActiveGroups().handleExceptions((error, stackTrace) {
-      loggy.error("error watching active proxies", error, stackTrace);
-      return ProxyUnexpectedFailure(error, stackTrace);
-    });
+  Stream<Either<ProxyFailure, List<OutboundGroup>>> watchActiveProxies() async* {
+    // The gRPC stream breaks whenever the core process is replaced. Yield the
+    // last snapshot so the UI keeps its list, then resubscribe instead of
+    // ending the stream (which would freeze the proxies page forever).
+    while (true) {
+      try {
+        await for (final groups in singbox.watchActiveGroups()) {
+          yield right<ProxyFailure, List<OutboundGroup>>(groups);
+        }
+      } catch (error, stackTrace) {
+        loggy.error("error watching active proxies; using latest snapshot", error, stackTrace);
+        yield right<ProxyFailure, List<OutboundGroup>>(singbox.latest);
+      }
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
   }
 
   @override

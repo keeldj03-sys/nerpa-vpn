@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/proxy/active/ip_widget.dart';
-import 'package:hiddify/gen/fonts.gen.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
-import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/features/proxy/active/ip_widget.dart';
+import 'package:nerpa_vpn/gen/fonts.gen.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 
 class ProxyTile extends HookConsumerWidget with PresLogger {
   const ProxyTile(this.proxy, {super.key, required this.selected, required this.onTap});

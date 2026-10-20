@@ -1,6 +1,6 @@
 {
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "ابدأ",
     "version": "الإصدار",
     "ok": "موافق",
@@ -101,7 +101,7 @@
   "intro": {
     "banner": "كل ما تحتاجه لإنترنت بلا قيود",
     "termsAndPolicyCaution(rich)": "بالاستمرار، أنت توافق على ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "صُنع بـ ❤️ بواسطة Hiddify - ${tap_source(مفتوح المصدر)} (${tap_license(الرخصة)})"
+    "info(rich)": "صُنع بـ ❤️ بواسطة Nerpa VPN - ${tap_source(مفتوح المصدر)} (${tap_license(الرخصة)})"
   },
   "pages": {
     "home": {
@@ -733,3 +733,4 @@
     }
   }
 }
+

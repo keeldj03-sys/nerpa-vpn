@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
-import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
-import 'package:hiddify/features/settings/notifier/config_option/config_option_notifier.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
+import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
+import 'package:nerpa_vpn/features/settings/notifier/config_option/config_option_notifier.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ConnectionWrapper extends StatefulHookConsumerWidget {
@@ -45,15 +47,14 @@ class _ConnectionWrapperState extends ConsumerState<ConnectionWrapper> with AppL
   @override
   void initState() {
     super.initState();
-    // remove for now...
-    //
-    // Future.delayed(const Duration(seconds: 2)).then(
-    //   (_) async {
-    //     if (ref.read(startedByUserProvider) && PlatformUtils.isDesktop) {
-    //       loggy.debug("previously started by user, trying to connect");
-    //       return ref.read(connectionNotifierProvider.notifier).mayConnect();
-    //     }
-    //   },
-    // );
+    // Nerpa: on desktop, if the user previously connected (startedByUser),
+    // reconnect automatically after a restart instead of sitting disconnected.
+    Future.delayed(const Duration(seconds: 2)).then((_) async {
+      if (!mounted) return;
+      if (ref.read(Preferences.startedByUser) && PlatformUtils.isDesktop) {
+        loggy.debug("previously started by user, trying to connect");
+        return ref.read(connectionNotifierProvider.notifier).mayConnect();
+      }
+    });
   }
 }

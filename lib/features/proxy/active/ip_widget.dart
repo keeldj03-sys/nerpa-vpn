@@ -1,13 +1,13 @@
 import 'package:circle_flags/circle_flags.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hiddify/core/haptic/haptic_service.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/utils/ip_utils.dart';
-import 'package:hiddify/gen/fonts.gen.dart';
-import 'package:hiddify/utils/riverpod_utils.dart';
+import 'package:nerpa_vpn/core/haptic/haptic_service.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/utils/ip_utils.dart';
+import 'package:nerpa_vpn/gen/fonts.gen.dart';
+import 'package:nerpa_vpn/utils/riverpod_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import "package:simple_icons/simple_icons.dart";
+// simple_icons replaced with Material Icons for Flutter 3.44.8 compatibility
 
 final _showIp = StateProvider.autoDispose((ref) {
   ref.disposeDelay(const Duration(seconds: 20));
@@ -155,19 +155,18 @@ class OrgIconData {
   const OrgIconData(this.icon, this.color);
 }
 
-// Map of organization keywords to icon and color
 const Map<String, OrgIconData> organizationData = {
-  "cloudflare": OrgIconData(SimpleIcons.cloudflare, SimpleIconColors.cloudflare),
-  "hetzner": OrgIconData(SimpleIcons.hetzner, SimpleIconColors.hetzner),
-  "ovh": OrgIconData(SimpleIcons.ovh, SimpleIconColors.ovh),
-  "azure": OrgIconData(SimpleIcons.microsoftazure, SimpleIconColors.microsoftazure),
-  "amazon": OrgIconData(SimpleIcons.amazonaws, SimpleIconColors.amazonaws),
-  "oracle": OrgIconData(SimpleIcons.oracle, SimpleIconColors.oracle),
-  "fastly": OrgIconData(SimpleIcons.fastly, SimpleIconColors.fastly),
-  "digitalocean": OrgIconData(SimpleIcons.digitalocean, SimpleIconColors.digitalocean),
-  "alibaba": OrgIconData(SimpleIcons.alibabacloud, SimpleIconColors.alibabacloud),
-  "google": OrgIconData(SimpleIcons.googlecloud, SimpleIconColors.googlecloud),
-  "starlink": OrgIconData(SimpleIcons.satellite, SimpleIconColors.satellite),
+  "cloudflare": OrgIconData(Icons.cloud, Color(0xFFF6821F)),
+  "hetzner": OrgIconData(Icons.dns, Color(0xFFD50C2D)),
+  "ovh": OrgIconData(Icons.storage, Color(0xFF123F6D)),
+  "azure": OrgIconData(Icons.cloud_queue, Color(0xFF0078D4)),
+  "amazon": OrgIconData(Icons.cloud_done, Color(0xFFFF9900)),
+  "oracle": OrgIconData(Icons.storage, Color(0xFFF80000)),
+  "fastly": OrgIconData(Icons.flash_on, Color(0xFFFF282D)),
+  "digitalocean": OrgIconData(Icons.water_drop, Color(0xFF0080FF)),
+  "alibaba": OrgIconData(Icons.cloud_circle, Color(0xFFFF6A00)),
+  "google": OrgIconData(Icons.cloud_outlined, Color(0xFF4285F4)),
+  "starlink": OrgIconData(Icons.satellite_alt, Color(0xFF000000)),
 };
 
 class OrganisationFlag extends HookConsumerWidget {

@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "auto",
+      "name": "Авто-выбор",
+      "description": "Оптимальный баланс: реклама блокируется, локальные и российские ресурсы — напрямую, остальное через прокси",
+      "rules": [
+        {
+          "name": "Блокировать рекламу",
+          "outbound": "block",
+          "ruleSets": ["geosite-category-ads-all"]
+        },
+        {
+          "name": "Мимо VPN: локальная сеть",
+          "outbound": "direct",
+          "ruleSets": ["geosite-private"]
+        },
+        {
+          "name": "Мимо VPN: Россия",
+          "outbound": "direct",
+          "ruleSets": ["geoip-ru", "geosite-ru"]
+        }
+      ]
+    },
+    {
+      "id": "max-protection",
+      "name": "Максимальная защита",
+      "description": "Весь трафик через прокси, кроме локальной сети. Реклама блокируется",
+      "rules": [
+        {
+          "name": "Блокировать рекламу",
+          "outbound": "block",
+          "ruleSets": ["geosite-category-ads-all"]
+        },
+        {
+          "name": "Мимо VPN: локальная сеть",
+          "outbound": "direct",
+          "ruleSets": ["geosite-private"]
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "name": "Домашние",
+      "description": "Для повседневного использования: соцсети и стриминги напрямую, остальное через прокси",
+      "rules": [
+        {
+          "name": "Блокировать рекламу",
+          "outbound": "block",
+          "ruleSets": ["geosite-category-ads-all"]
+        },
+        {
+          "name": "Мимо VPN: локальная сеть",
+          "outbound": "direct",
+          "ruleSets": ["geosite-private"]
+        },
+        {
+          "name": "Мимо VPN: Россия",
+          "outbound": "direct",
+          "ruleSets": ["geoip-ru", "geosite-ru"]
+        },
+        {
+          "name": "Мимо VPN: соцсети и мессенджеры",
+          "outbound": "direct",
+          "ruleSets": [
+            "geosite-telegram",
+            "geosite-whatsapp",
+            "geosite-discord",
+            "geosite-instagram",
+            "geosite-facebook",
+            "geosite-youtube",
+            "geosite-netflix",
+            "geosite-spotify",
+            "geosite-tiktok"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "minimal",
+      "name": "Минимальный",
+      "description": "Только блокировка рекламы и обход локальной сети. Всё остальное — через прокси",
+      "rules": [
+        {
+          "name": "Блокировать рекламу",
+          "outbound": "block",
+          "ruleSets": ["geosite-category-ads-all"]
+        },
+        {
+          "name": "Мимо VPN: локальная сеть",
+          "outbound": "direct",
+          "ruleSets": ["geosite-private"]
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,8 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   dynamic_color
+  media_kit_libs_windows_video
+  media_kit_video
   screen_retriever_windows
   sentry_flutter
   share_plus

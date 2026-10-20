@@ -53,6 +53,14 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 add_subdirectory("runner")
 
 
+# FetchContent download of the sqlite3 amalgamation is flaky on this machine
+# (intermittent "Permission denied" in FetchContent's subbuild). Use the
+# pre-fetched source instead. Re-download manually to windows/third_party
+# when upgrading sqlite3_flutter_libs.
+set(FETCHCONTENT_SOURCE_DIR_SQLITE3
+  "${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3-src"
+  CACHE PATH "pre-fetched sqlite3 source for sqlite3_flutter_libs")
+
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)

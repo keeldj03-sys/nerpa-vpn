@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/utils/platform_utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 
 @JsonEnum(valueField: 'key')
 enum ServiceMode {

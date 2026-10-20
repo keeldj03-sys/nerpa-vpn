@@ -1,5 +1,5 @@
-import 'package:hiddify/core/preferences/preferences_provider.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/core/preferences/preferences_provider.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';

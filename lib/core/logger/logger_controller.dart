@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:hiddify/core/logger/custom_logger.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/logger/custom_logger.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 import 'package:loggy/loggy.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 

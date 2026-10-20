@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
-import 'package:hiddify/bootstrap.dart';
-import 'package:hiddify/core/model/environment.dart';
+import 'package:nerpa_vpn/bootstrap.dart';
+import 'package:nerpa_vpn/core/model/environment.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();

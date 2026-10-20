@@ -2,17 +2,20 @@ import 'dart:async';
 
 import 'package:dartx/dartx.dart';
 
-import 'package:hiddify/core/haptic/haptic_service.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/preferences/preferences_provider.dart';
-import 'package:hiddify/core/utils/preferences_utils.dart';
-import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
-import 'package:hiddify/features/proxy/data/proxy_data_providers.dart';
-import 'package:hiddify/features/proxy/model/proxy_failure.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/core/haptic/haptic_service.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/core/preferences/preferences_provider.dart';
+import 'package:nerpa_vpn/core/utils/preferences_utils.dart';
+import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
+import 'package:nerpa_vpn/features/profile/data/selected_outbound_store.dart';
+import 'package:nerpa_vpn/features/proxy/data/proxy_data_providers.dart';
+import 'package:nerpa_vpn/features/proxy/model/proxy_failure.dart';
+import 'package:nerpa_vpn/features/proxy/overview/proxy_overview_item.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 
-import 'package:hiddify/utils/riverpod_utils.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/utils/riverpod_utils.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'proxies_overview_notifier.g.dart';
@@ -57,40 +60,30 @@ class ProxiesSortNotifier extends _$ProxiesSortNotifier with AppLogger {
 @riverpod
 class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   @override
-  Stream<OutboundGroup?> build() {
+  Stream<List<ProxyOverviewItem>> build() {
     ref.disposeDelay(const Duration(seconds: 15));
     final serviceRunning = ref.watch(serviceRunningProvider);
     if (!serviceRunning) {
       return Stream.error(const ServiceNotRunning());
     }
     final sortBy = ref.watch(proxiesSortNotifierProvider);
-    // yield* ref
-    //     .watch(proxyRepositoryProvider)
-    //     .watchProxies()
-    //     .throttleTime(
-    //       const Duration(milliseconds: 100),
-    //       leading: false,
-    //       trailing: true,
-    //     )
-    //     .map(
-    //       (event) => event.getOrElse(
-    //         (err) {
-    //           loggy.warning("error receiving proxies", err);
-    //           throw err;
-    //         },
-    //       ),
-    //     )
-    //     .asyncMap((proxies) async => _sortOutbounds(proxies, sortBy));
     return ref
         .watch(proxyRepositoryProvider)
-        .watchProxies()
+        .watchActiveProxies()
         .map(
           (event) => event.getOrElse((err) {
-            loggy.warning("error receiving proxies", err);
+            loggy.warning("error receiving active proxies", err);
             throw err;
           }),
         )
-        .asyncMap((proxies) async => await _sortOutbounds(proxies, sortBy));
+        .map(_flattenOutbounds)
+        .map((items) => _sortOutbounds(items, sortBy))
+        // Transient gRPC failures (e.g. while the core is still starting)
+        // used to switch the page into the error state and make the whole
+        // list disappear; keep the last snapshot instead.
+        .handleError((Object error, StackTrace stackTrace) {
+          loggy.warning("transient proxies stream error, keeping last snapshot", error, stackTrace);
+        });
   }
 
   // Future<List<OutboundGroup>> _sortOutbounds(
@@ -136,44 +129,48 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   //   return sortedProxies;
   // }
 
-  Future<OutboundGroup?> _sortOutbounds(OutboundGroup? proxies, ProxiesSort sortBy) async {
-    if (proxies == null) return null;
+  List<ProxyOverviewItem> _flattenOutbounds(List<OutboundGroup> groups) {
+    // v2RayTun shows one flat list of the subscription's nodes. Every node
+    // exists in several groups (select/balance/lowest); the "select" group is
+    // the one Selector that supports manual picking, so prefer it when present
+    // and deduplicate the rest of the groups by tag.
+    final mainSelector = groups.where((g) => g.tag == "select").firstOrNull;
+    final sourceGroups = mainSelector != null ? [mainSelector] : groups;
+    final seen = <String>{};
+    final items = <ProxyOverviewItem>[];
+    for (final group in sourceGroups) {
+      for (final item in group.items) {
+        if (item.isGroup) continue;
+        if (!seen.add(item.tag)) continue;
+        items.add(
+          ProxyOverviewItem(
+            groupTag: group.tag,
+            outbound: item,
+            isSelected: group.selected == item.tag || item.isSelected,
+          ),
+        );
+      }
+    }
+    return items;
+  }
 
-    final sortedItems = switch (sortBy) {
-      ProxiesSort.name => proxies.items.sortedWith((a, b) {
-        if (a.isGroup && !b.isGroup) return -1;
-        if (!a.isGroup && b.isGroup) return 1;
-        return a.tag.compareTo(b.tag);
-      }),
-      ProxiesSort.delay => proxies.items.sortedWith((a, b) {
-        if (a.isGroup && !b.isGroup) return -1;
-        if (!a.isGroup && b.isGroup) return 1;
-
-        final ai = a.urlTestDelay;
-        final bi = b.urlTestDelay;
-        if (ai == 0 && bi == 0) return -1;
+  List<ProxyOverviewItem> _sortOutbounds(List<ProxyOverviewItem> proxies, ProxiesSort sortBy) {
+    return switch (sortBy) {
+      ProxiesSort.name => proxies.sortedWith((a, b) => a.outbound.tag.compareTo(b.outbound.tag)),
+      ProxiesSort.delay => proxies.sortedWith((a, b) {
+        final ai = a.outbound.urlTestDelay;
+        final bi = b.outbound.urlTestDelay;
+        if (ai == 0 && bi == 0) return a.outbound.tag.compareTo(b.outbound.tag);
         if (ai == 0 && bi > 0) return 1;
         if (ai > 0 && bi == 0) return -1;
-        return ai.compareTo(bi);
+        final delayCompare = ai.compareTo(bi);
+        return delayCompare != 0 ? delayCompare : a.outbound.tag.compareTo(b.outbound.tag);
       }),
-      ProxiesSort.unsorted => proxies.items,
-      ProxiesSort.usage => proxies.items.sortedWith((a, b) {
-        if (a.isGroup && !b.isGroup) return -1;
-        if (!a.isGroup && b.isGroup) return 1;
-        return (b.upload + b.download).compareTo(a.upload + a.download);
-      }),
+      ProxiesSort.unsorted => proxies,
+      ProxiesSort.usage => proxies.sortedWith(
+        (a, b) => (b.outbound.upload + b.outbound.download).compareTo(a.outbound.upload + a.outbound.download),
+      ),
     };
-    final items = <OutboundInfo>[];
-    for (final item in sortedItems) {
-      // if (groupWithSelected.keys.contains(item.tag)) {
-      //   items.add(item.copyWith(selectedTag: groupWithSelected[item.tag]));
-      // } else {
-      items.add(item);
-      // }
-    }
-    proxies.items.clear();
-    proxies.items.addAll(items);
-    return proxies;
   }
 
   // Future<void> changeProxy(String groupTag, String outboundTag) async {
@@ -205,16 +202,25 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
     if (!state.hasValue) return;
     final outbounds = state.value!;
     await ref.read(hapticServiceProvider.notifier).lightImpact();
-    await ref.read(proxyRepositoryProvider).selectProxy(groupTag, outboundTag).getOrElse((err) {
-      loggy.warning("error selecting outbound", err);
-      throw err;
-    }).run();
-    final newselected = outbounds.items.where((e) => e.tag == outboundTag).firstOrNull;
-    if (newselected != null) {
-      newselected.isSelected = true;
-      outbounds.selected = newselected.tag;
-      state = AsyncValue.data(outbounds);
+    try {
+      await ref.read(proxyRepositoryProvider).selectProxy(groupTag, outboundTag).run();
+    } catch (error, stackTrace) {
+      loggy.warning("error selecting outbound", error, stackTrace);
+      ref.read(inAppNotificationControllerProvider).showErrorToast(
+            ref.read(translationsProvider).requireValue.pages.proxies.changeFailed,
+          );
     }
+    // Сохраняем выбор, чтобы он не слетел при следующем подключении:
+    // конфиг каждый раз собирается заново и узел сбрасывается на узел по умолчанию.
+    await saveSelectedOutbound(ref, outboundTag);
+    state = AsyncValue.data([
+      for (final item in outbounds)
+        ProxyOverviewItem(
+          groupTag: item.groupTag,
+          outbound: item.outbound,
+          isSelected: item.groupTag == groupTag ? item.outbound.tag == outboundTag : item.isSelected,
+        ),
+    ]);
   }
 
   Future<void> urlTest(String groupTag) async {

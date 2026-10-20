@@ -3,12 +3,13 @@ import 'dart:math';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/failures.dart';
-import 'package:hiddify/features/proxy/overview/proxies_overview_notifier.dart';
-import 'package:hiddify/features/proxy/widget/proxy_tile.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/failures.dart';
+import 'package:nerpa_vpn/features/proxy/overview/proxies_overview_notifier.dart';
+import 'package:nerpa_vpn/features/proxy/widget/proxy_tile.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 
 class ProxiesOverviewPage extends HookConsumerWidget with PresLogger {
   const ProxiesOverviewPage({super.key});
@@ -19,6 +20,7 @@ class ProxiesOverviewPage extends HookConsumerWidget with PresLogger {
 
     final proxies = ref.watch(proxiesOverviewNotifierProvider);
     final sortBy = ref.watch(proxiesSortNotifierProvider);
+    final search = useState('');
 
     // final selectActiveProxyMutation = useMutation(
     //   initialOnFailure: (error) => CustomToast.error(t.presentShortError(error)).show(context),
@@ -39,6 +41,24 @@ class ProxiesOverviewPage extends HookConsumerWidget with PresLogger {
           ),
           const Gap(8),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: TextField(
+              onChanged: (value) => search.value = value.toLowerCase().trim(),
+              decoration: InputDecoration(
+                hintText: t.pages.proxies.searchHint,
+                prefixIcon: const Icon(Icons.search_rounded),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async => await ref.read(proxiesOverviewNotifierProvider.notifier).urlTest("select"),
@@ -46,35 +66,47 @@ class ProxiesOverviewPage extends HookConsumerWidget with PresLogger {
         child: const Icon(FluentIcons.flash_24_filled),
       ),
       body: proxies.when(
-        data: (group) => group != null
-            ? LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth;
-                  final crossAxisCount = PlatformUtils.isMobile && width < 600 ? 1 : max(1, (width / 268).floor());
-                  return GridView.builder(
-                    padding: const EdgeInsets.only(bottom: 86),
-                    itemCount: group.items.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisExtent: 72,
-                    ),
-                    itemBuilder: (context, index) {
-                      final proxy = group.items[index];
-                      return ProxyTile(
-                        proxy,
-                        selected: group.selected == proxy.tag,
-                        onTap: () async {
-                          await ref.read(proxiesOverviewNotifierProvider.notifier).changeProxy(group.tag, proxy.tag);
-                          // if (selectActiveProxyMutation.state.isInProgress) return;
-                          // selectActiveProxyMutation.setFuture(
-                          // );
-                        },
-                      );
-                    },
-                  );
-                },
-              )
-            : Center(child: Text(t.pages.proxies.empty)),
+        data: (items) {
+          final query = search.value;
+          final filtered = query.isEmpty
+              ? items
+              : items
+                  .where(
+                    (e) =>
+                        e.outbound.tagDisplay.toLowerCase().contains(query) ||
+                        (e.outbound.ipinfo.countryCode.toLowerCase().contains(query)) ||
+                        (e.outbound.ipinfo.org.toLowerCase().contains(query)),
+                  )
+                  .toList();
+          return filtered.isNotEmpty
+              ? LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final crossAxisCount = PlatformUtils.isMobile && width < 600 ? 1 : max(1, (width / 268).floor());
+                    return GridView.builder(
+                      padding: const EdgeInsets.only(bottom: 86),
+                      itemCount: filtered.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        mainAxisExtent: 72,
+                      ),
+                      itemBuilder: (context, index) {
+                        final proxy = filtered[index];
+                        return ProxyTile(
+                          proxy.outbound,
+                          selected: proxy.isSelected,
+                          onTap: () async {
+                            await ref
+                                .read(proxiesOverviewNotifierProvider.notifier)
+                                .changeProxy(proxy.groupTag, proxy.outbound.tag);
+                          },
+                        );
+                      },
+                    );
+                  },
+                )
+              : Center(child: Text(t.pages.proxies.empty));
+        },
         error: (error, stackTrace) => Center(child: Text(t.presentShortError(error))),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
