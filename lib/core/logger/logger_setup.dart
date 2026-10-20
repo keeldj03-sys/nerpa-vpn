@@ -11,9 +11,9 @@ import 'dart:async';
 import 'dart:developer' as dev;
 
 import 'package:flutter/foundation.dart' show debugPrint, kReleaseMode;
-import 'package:hiddify/core/logger/log_level_compat.dart';
-import 'package:hiddify/core/logger/ring/log_ring.dart';
-import 'package:hiddify/core/logger/sinks/file_sink.dart';
+import 'package:nerpa_vpn/core/logger/log_level_compat.dart';
+import 'package:nerpa_vpn/core/logger/ring/log_ring.dart';
+import 'package:nerpa_vpn/core/logger/sinks/file_sink.dart';
 import 'package:logging/logging.dart';
 
 /// one place that turns a record into one line of text
@@ -70,7 +70,7 @@ void logSetConsoleLevel(Level level) => _consoleLevel = level;
 /// chip on every single row, and it never carries anything useful.
 /// Only frames from our own package are worth reading; the rest is framework
 /// and SDK noise. Set this to the app's package prefix.
-String ownPackagePrefix = 'package:hiddify/';
+String ownPackagePrefix = 'package:nerpa_vpn/';
 
 /// how many of our own frames to keep
 int errorFrames = 4;
@@ -78,7 +78,7 @@ int errorFrames = 4;
 /// The logging code's own frames. error() captures StackTrace.current inside
 /// the extension, so without this the origin would point at the logger rather
 /// than at whoever called it.
-const _loggerInternals = 'package:hiddify/core/logger/';
+const _loggerInternals = 'package:nerpa_vpn/core/logger/';
 
 bool _isOurs(String frame) =>
     frame.contains(ownPackagePrefix) && !frame.contains(_loggerInternals);

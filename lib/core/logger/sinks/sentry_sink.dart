@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hiddify/utils/sentry_utils.dart';
+import 'package:nerpa_vpn/utils/sentry_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 

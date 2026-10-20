@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/core/logger/sinks/file_sink_io.dart';
+import 'package:nerpa_vpn/core/logger/sinks/file_sink_io.dart';
 
 void main() {
   late Directory dir;

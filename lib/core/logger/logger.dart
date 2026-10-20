@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 
 // Re-exported so every file that already imports this one also gets the short
 // level names in scope. A Dart extension is only visible where it is imported,
 // so without this each call site would need its own import.
-export 'package:hiddify/core/logger/log_level_compat.dart';
+export 'package:nerpa_vpn/core/logger/log_level_compat.dart';
 
 /// The two loggers that belong to no class, so no mixin can name them, plus the
 /// handlers for errors nobody caught.

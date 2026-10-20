@@ -1,4 +1,4 @@
-import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
+import 'package:nerpa_vpn/features/app_based_routing/data/auto_selection_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auto_selection_notifier.g.dart';

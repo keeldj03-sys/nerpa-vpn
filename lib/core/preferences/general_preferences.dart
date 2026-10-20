@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hiddify/core/logger/ring/log_ring.dart';
-import 'package:hiddify/core/model/region.dart';
-import 'package:hiddify/core/preferences/actions_at_closing.dart';
-import 'package:hiddify/core/utils/preferences_utils.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
-import 'package:hiddify/features/window/notifier/window_notifier.dart';
-import 'package:hiddify/utils/platform_utils.dart';
+import 'package:nerpa_vpn/core/logger/ring/log_ring.dart';
+import 'package:nerpa_vpn/core/model/region.dart';
+import 'package:nerpa_vpn/core/preferences/actions_at_closing.dart';
+import 'package:nerpa_vpn/core/utils/preferences_utils.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_sort_enum.dart';
+import 'package:nerpa_vpn/features/window/notifier/window_notifier.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -108,6 +108,10 @@ abstract class Preferences {
   static final autoCheckIp = PreferencesNotifier.create<bool, bool>("auto_check_ip", true);
 
   static final startedByUser = PreferencesNotifier.create<bool, bool>("started_by_user", false);
+
+  // v2RayTun parity: optional custom presets URL (routing rule bundles).
+  // When empty only built-in presets (assets/presets/presets.json) are used.
+  static final presetsUrl = PreferencesNotifier.create<String, String>("presets_url", "");
 
   static final storeReviewedByUser = PreferencesNotifier.create<bool, bool>("store_reviewed_by_user", false);
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
+import 'package:nerpa_vpn/core/theme/app_theme.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/features/profile/notifier/profile_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ProfileLoading extends ConsumerWidget {
@@ -11,8 +12,9 @@ class ProfileLoading extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
     final theme = Theme.of(context);
-    return Padding(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 64),
+      color: AppTheme.nerpaSurface,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

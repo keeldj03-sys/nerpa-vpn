@@ -4,12 +4,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/profile/add/widgets/widgets.dart';
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/features/profile/add/widgets/widgets.dart';
+import 'package:nerpa_vpn/features/profile/notifier/profile_notifier.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class FixBtns extends ConsumerWidget {
@@ -21,9 +21,10 @@ class FixBtns extends ConsumerWidget {
     final t = ref.watch(translationsProvider).requireValue;
 
     final isDesktop = PlatformUtils.isDesktop;
+    final gap = isDesktop ? AddProfileModalConst.fixBtnsGapDesktop : AddProfileModalConst.fixBtnsGap;
     return Row(
       children: [
-        const Gap(AddProfileModalConst.fixBtnsGap),
+        Gap(gap),
         FixBtn(
           key: const ValueKey('add_from_clipboard_button'),
           height: height,
@@ -34,7 +35,7 @@ class FixBtns extends ConsumerWidget {
             ref.read(addProfileNotifierProvider.notifier).addClipboard(cr);
           },
         ),
-        const Gap(AddProfileModalConst.fixBtnsGap),
+        Gap(gap),
         FixBtn(
           key: const ValueKey('add_from_file_button'),
           height: height,
@@ -64,7 +65,7 @@ class FixBtns extends ConsumerWidget {
           },
         ),
         if (!isDesktop) ...[
-          const Gap(AddProfileModalConst.fixBtnsGap),
+          Gap(gap),
           FixBtn(
             key: const ValueKey('add_by_qr_code_button'),
             height: height,
@@ -77,7 +78,7 @@ class FixBtns extends ConsumerWidget {
             },
           ),
         ],
-        const Gap(AddProfileModalConst.fixBtnsGap),
+        Gap(gap),
         FixBtn(
           key: const ValueKey('add_manually_button'),
           height: height,
@@ -87,7 +88,7 @@ class FixBtns extends ConsumerWidget {
             ref.read(addProfilePageNotifierProvider.notifier).goManual();
           },
         ),
-        const Gap(AddProfileModalConst.fixBtnsGap),
+        Gap(gap),
       ],
     );
   }

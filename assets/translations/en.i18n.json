@@ -1,6 +1,6 @@
 {
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "Start",
     "version": "Version",
     "ok": "OK",
@@ -98,7 +98,7 @@
   "intro": {
     "banner": "All you need for an unrestricted internet",
     "termsAndPolicyCaution(rich)": "By continuing you agree to ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Made with ❤️ by Hiddify. ${tap_source(Open source)} and ${tap_license(License)}"
+    "info(rich)": "Made with ❤️ by Nerpa VPN. ${tap_source(Open source)} and ${tap_license(License)}"
   },
   "pages": {
     "home": {
@@ -110,7 +110,9 @@
       "sort": "Sort proxies",
       "testDelay": "Test delay",
       "empty": "No proxies available",
+      "searchHint": "Search servers, countries or providers...",
       "activeProxy": "Active proxy",
+      "changeFailed": "Failed to switch the server",
       "unknownIp": "Unknown IP",
       "switchFailed": "Couldn’t switch to this proxy. Try again.",
       "sortOptions": {
@@ -214,6 +216,12 @@
     },
     "settings": {
       "title": "Settings",
+      "hardReset": {
+        "title": "Hard reset",
+        "message": "Reset the core, clear the cache and restart the service. Profiles and preferences are kept.",
+        "success": "Reset completed",
+        "failure": "Reset failed"
+      },
       "resetTunnel": "Reset VPN profile",
       "options": {
         "import": {
@@ -258,6 +266,16 @@
       },
       "routing": {
         "title": "Routing",
+        "presets": {
+          "title": "Presets",
+          "loadError": "Failed to load presets",
+          "empty": "No presets available",
+          "rulesCount(plural, param=count)": {
+            "one": "1 rule",
+            "other": "$count rules"
+          },
+          "applied": "Preset \"${name}\" applied"
+        },
         "routeRule": {
           "add": "Add rule",
           "delete": "Delete rule",
@@ -610,6 +628,9 @@
         "other": "$days days remaining"
       },
       "remainingUnlimited": "Unlimited",
+      "remainingTime": "Remaining time",
+      "remainingUsage": "Remaining traffic",
+      "profileSite": "Subscription site",
       "remainingTrafficSemanticLabel": "${consumed} of ${total} traffic consumed",
       "remainingTraffic": "Remaining traffic",
       "openWebPage": "Open web page",

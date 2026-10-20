@@ -1,5 +1,5 @@
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart' as pb;
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart' as pb;
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 import 'package:logging/logging.dart';
 
 /// Engine logs, split by the `type` field every LogMessage already carries.

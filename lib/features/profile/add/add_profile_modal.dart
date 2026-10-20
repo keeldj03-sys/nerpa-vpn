@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/features/profile/add/widgets/free_btns.dart';
-import 'package:hiddify/features/profile/add/widgets/widgets.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
+import 'package:nerpa_vpn/core/theme/app_theme.dart';
+import 'package:nerpa_vpn/features/profile/add/widgets/free_btns.dart';
+import 'package:nerpa_vpn/features/profile/add/widgets/widgets.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/notifier/profile_notifier.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AddProfileModal extends HookConsumerWidget {
@@ -57,10 +58,11 @@ class AddProfileOptions extends HookConsumerWidget {
     final isDesktop = PlatformUtils.isDesktop;
     final gapCount = isDesktop ? AddProfileModalConst.fixBtnsGapCountDesktop : AddProfileModalConst.fixBtnsGapCount;
     final itemCount = isDesktop ? AddProfileModalConst.fixBtnsItemCountDesktop : AddProfileModalConst.fixBtnsItemCount;
+    final gap = isDesktop ? AddProfileModalConst.fixBtnsGapDesktop : AddProfileModalConst.fixBtnsGap;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final fixBtnsHeight = (constraints.maxWidth - AddProfileModalConst.fixBtnsGap * gapCount) / itemCount;
-        final fullHeight = fixBtnsHeight + AddProfileModalConst.navBarHeight + 32;
+        final fixBtnsHeight = (constraints.maxWidth - gap * gapCount) / itemCount;
+        final fullHeight = fixBtnsHeight + AddProfileModalConst.navBarHeight + 132;
         final initial = !freeSwitch ? fullHeight : fullHeight + 180;
         var min = !freeSwitch ? fullHeight : fullHeight + 100;
         var max = !freeSwitch ? fullHeight / constraints.maxHeight : 0.85;
@@ -75,7 +77,40 @@ class AddProfileOptions extends HookConsumerWidget {
           expand: false,
           builder: (context, scrollController) => Column(
             children: [
-              const Gap(AddProfileModalConst.fixBtnsGap),
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.nerpaCard,
+                  border: Border(bottom: BorderSide(color: AppTheme.nerpaBorder.withOpacity(0.35))),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.add_link_rounded, color: AppTheme.nerpaAccent, size: 25),
+                    Gap(12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Добавить подключение',
+                            style: TextStyle(
+                              color: AppTheme.nerpaTextPrimary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Импортируйте конфигурацию удобным способом',
+                            style: TextStyle(color: AppTheme.nerpaTextSecondary, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Gap(gap),
               FixBtns(height: fixBtnsHeight),
               if (freeSwitch) Expanded(child: FreeBtns(scrollController: scrollController)) else const Spacer(),
               const NavBar(),
@@ -129,10 +164,18 @@ class AddProfileManual extends HookConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 12),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 12, 16),
             child: Row(
               children: [
-                Expanded(child: Text(t.common.manually, style: theme.textTheme.headlineMedium)),
+                Expanded(
+                  child: Text(
+                    'Добавить подключение вручную',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: AppTheme.nerpaTextPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => ref.read(addProfilePageNotifierProvider.notifier).goOptions(),
@@ -218,8 +261,9 @@ class AddProfileManual extends HookConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: FilledButton(
-                    child: Text(t.common.add),
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.check_rounded, size: 18),
+                    label: Text(t.common.add),
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         final i = updateInterval.value.toInt();

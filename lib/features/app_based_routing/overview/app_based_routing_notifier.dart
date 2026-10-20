@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:hiddify/core/model/region.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
-import 'package:hiddify/features/app_based_routing/data/auto_selection_repository_provider.dart';
-import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/model/region.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/features/app_based_routing/data/auto_selection_repository.dart';
+import 'package:nerpa_vpn/features/app_based_routing/data/auto_selection_repository_provider.dart';
+import 'package:nerpa_vpn/features/app_based_routing/data/selected_data_provider.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:nerpa_vpn/features/app_based_routing/overview/auto_selection_notifier.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:installed_apps/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

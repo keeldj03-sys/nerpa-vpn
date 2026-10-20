@@ -1,40 +1,68 @@
+import 'dart:convert';
+
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/core/model/failures.dart';
-import 'package:hiddify/core/model/trusted_links.dart';
-import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
-import 'package:hiddify/core/widget/adaptive_icon.dart';
-import 'package:hiddify/core/widget/adaptive_menu.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
-import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
-import 'package:hiddify/gen/fonts.gen.dart';
-import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
+import 'package:nerpa_vpn/core/model/trusted_links.dart';
+import 'package:nerpa_vpn/core/model/failures.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
+import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
+import 'package:nerpa_vpn/core/router/go_router/helper/active_breakpoint_notifier.dart';
+import 'package:nerpa_vpn/core/theme/app_theme.dart';
+import 'package:nerpa_vpn/core/widget/adaptive_menu.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/notifier/profile_notifier.dart';
+import 'package:nerpa_vpn/features/profile/overview/profiles_notifier.dart';
+import 'package:nerpa_vpn/features/profile/widget/active_profile_nodes.dart';
 import 'package:simple_icons/simple_icons.dart';
+import 'package:nerpa_vpn/gen/fonts.gen.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileTile extends HookConsumerWidget {
-  const ProfileTile({super.key, required this.profile, this.isMain = false, this.margin = EdgeInsets.zero});
+  const ProfileTile({
+    super.key,
+    required this.profile,
+    this.isMain = false,
+    this.margin = EdgeInsets.zero,
+    this.color,
+    this.showActiveOutbounds = false,
+    this.showBorder = true,
+    this.showActionButton = true,
+    this.padding = const EdgeInsets.fromLTRB(18, 16, 18, 16),
+  });
 
   final ProfileEntity profile;
 
   /// home screen active profile card
   final bool isMain;
   final EdgeInsets margin;
+  final Color? color;
+  final bool showActiveOutbounds;
+
+  /// Рисовать ли рамку карточки (на главной карточка вложена в общую — рамка лишняя).
+  final bool showBorder;
+
+  /// Рисовать ли кнопку действий справа (на главной она лишняя и ломает вёрстку).
+  final bool showActionButton;
+
+  /// Внутренние отступы карточки (на главной карточка вложена в общую — отступы лишние).
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
     final theme = Theme.of(context);
+
+    final showInlineOutbounds = showActiveOutbounds && profile.active && !isMain;
 
     final selectActiveMutation = useMutation(
       initialOnFailure: (err) {
@@ -50,289 +78,277 @@ class ProfileTile extends HookConsumerWidget {
       _ => null,
     };
 
-    final showActionButton = profile is RemoteProfileEntity || !isMain;
+    final hasActionButton = showActionButton && (profile is RemoteProfileEntity || !isMain);
 
-    void handleTap() {
-      if (isMain) {
-        if (Breakpoint(context).isMobile()) {
-          ref.read(bottomSheetsNotifierProvider.notifier).showProfilesOverview();
-        } else {
-          context.goNamed('profiles');
-        }
-        return;
-      }
-      if (selectActiveMutation.state.isInProgress) return;
-      selectActiveMutation.setFuture(ref.read(profilesNotifierProvider.notifier).selectActiveProfile(profile.id));
-      if (context.canPop()) {
-        context.pop();
-      } else {
-        context.goNamed('home');
-      }
-    }
+    // final effectiveMargin = isMain ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8) : const EdgeInsets.only(left: 12, right: 12, bottom: 12);
+    // final double effectiveElevation = profile.active ? 12 : 4;
+    // final effectiveOutlineColor = profile.active ? theme.colorScheme.outline : Colors.transparent;
+    final borderColor = profile.active
+        ? AppTheme.nerpaAccent.withValues(alpha: 0.28)
+        : Colors.white.withValues(alpha: 0.06);
+    final backgroundColor = profile.active ? const Color(0xFF121C20) : const Color(0xFF11161A);
+    final titleColor = profile.active ? AppTheme.nerpaTextPrimary : AppTheme.nerpaTextSecondary.withValues(alpha: 0.96);
 
-    // Provider links (profile-web-page-url / support-url) show as separate pills
-    // below the main card, for remote profiles.
-    final RemoteProfileEntity? remote = profile is RemoteProfileEntity ? profile as RemoteProfileEntity : null;
-    final bool showLinks =
+    // Links the provider offers (website / support), rendered below the main card.
+    final remote = profile is RemoteProfileEntity ? profile as RemoteProfileEntity : null;
+    final showLinks =
         ProfileTileConst.showProviderLinks &&
         isMain &&
         remote != null &&
         ((remote.webPageUrl?.isNotEmpty ?? false) || (remote.supportUrl?.isNotEmpty ?? false));
 
-    final card = Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        side: profile.active ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
-        borderRadius: showLinks ? ProfileTileConst.topOnlyBorderRadius : ProfileTileConst.cardBorderRadius,
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+      margin: margin,
+      decoration: BoxDecoration(
+        color: color ?? backgroundColor,
+        borderRadius: ProfileTileConst.cardBorderRadius,
+        border: showBorder ? Border.all(color: borderColor, width: profile.active ? 1.2 : 1) : null,
       ),
-      elevation: profile.active ? 0 : 1,
       child: IntrinsicHeight(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
+          constraints: BoxConstraints(minHeight: isMain ? 72 : 92),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (showActionButton) ...[
-                SizedBox(
-                  width: 48,
-                  child: Semantics(
-                    sortKey: const OrdinalSortKey(1),
-                    child: ProfileActionButton(profile, !isMain, squareBottom: showLinks),
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  sortKey: isMain ? const OrdinalSortKey(0) : null,
+                  focused: isMain,
+                  liveRegion: isMain,
+                  namesRoute: isMain,
+                  label: isMain ? t.pages.profiles.viewAllProfiles : null,
+                  child: InkWell(
+                    borderRadius: hasActionButton
+                        ? ProfileTileConst.startBorderRadius(Directionality.of(context))
+                        : ProfileTileConst.cardBorderRadius,
+                    onTap: () {
+                      if (isMain) {
+                        if (Breakpoint(context).isMobile()) {
+                          ref.read(bottomSheetsNotifierProvider.notifier).showProfilesOverview();
+                        } else {
+                          context.goNamed('profiles');
+                        }
+                      } else {
+                        if (selectActiveMutation.state.isInProgress) return;
+                        selectActiveMutation.setFuture(
+                          ref.read(profilesNotifierProvider.notifier).selectActiveProfile(profile.id),
+                        );
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.goNamed('home');
+                        }
+                      }
+                    },
+                    child: Padding(
+                      padding: padding,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isMain) ...[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              profile.name,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: theme.textTheme.titleMedium?.copyWith(
+                                                color: titleColor,
+                                                fontWeight: profile.active ? FontWeight.w700 : FontWeight.w600,
+                                                height: 1.18,
+                                                fontFamily: PlatformUtils.isWindows ? FontFamily.emoji : null,
+                                              ),
+                                              semanticsLabel: profile.active
+                                                  ? t.pages.profiles.activeProfileName(name: profile.name)
+                                                  : t.pages.profiles.nonActiveProfileName(name: profile.name),
+                                            ),
+                                          ),
+                                          if (profile.active) ...[
+                                            const Gap(12),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.nerpaAccent.withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(999),
+                                              ),
+                                              child: const Text(
+                                                'ACTIVE',
+                                                style: TextStyle(
+                                                  color: AppTheme.nerpaAccent,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const Gap(6),
+                                      Text(
+                                        profile is RemoteProfileEntity ? 'Remote subscription' : 'Local configuration',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: AppTheme.nerpaTextSecondary.withValues(alpha: 0.86),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    profile.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: titleColor,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.15,
+                                      fontFamily: PlatformUtils.isWindows ? FontFamily.emoji : null,
+                                    ),
+                                    semanticsLabel: t.pages.profiles.activeProfileName(name: profile.name),
+                                  ),
+                                ),
+                                if (profile.active) ...[
+                                  const Gap(12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.nerpaAccent.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Text(
+                                      'ACTIVE',
+                                      style: TextStyle(
+                                        color: AppTheme.nerpaAccent,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          if (subInfo != null) ...[
+                            Gap(isMain ? 12 : 10),
+                            RemainingTrafficIndicator(subInfo.ratio),
+                            const Gap(10),
+                            ProfileSubscriptionInfo(subInfo),
+                          ],
+                          if (profile.populatedHeaders?['announce'] is String) ...[
+                            const Gap(10),
+                            ProfileAnnounceBanner(profile.populatedHeaders!),
+                          ],
+                          if (showInlineOutbounds) ...[
+                            const Gap(14),
+                            const ActiveProfileNodesBlock(),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                if (profile.active) VerticalDivider(width: 1, color: theme.colorScheme.outline) else const Gap(1),
-              ],
-              Expanded(child: _body(context, t, theme, subInfo, showActionButton, handleTap, showLinks)),
+              ),
+              if (hasActionButton)
+                Container(
+                  width: isMain ? 68 : 64,
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                        color: profile.active
+                            ? AppTheme.nerpaAccent.withValues(alpha: 0.18)
+                            : Colors.white.withValues(alpha: 0.06),
+                      ),
+                    ),
+                  ),
+                  child: Semantics(sortKey: const OrdinalSortKey(1), child: ProfileActionButton(profile, !isMain)),
+                ),
             ],
           ),
         ),
       ),
     );
 
-    return Padding(
-      padding: margin,
-      child: showLinks
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                card,
-                ProfileLinkButtons(webPageUrl: remote.webPageUrl, supportUrl: remote.supportUrl),
-              ],
-            )
-          : card,
-    );
-  }
-
-  /// The tappable content: the profile name (wrapped with a dropdown
-  /// affordance on the main card) followed by the subscription info.
-  Widget _body(
-    BuildContext context,
-    TranslationsEn t,
-    ThemeData theme,
-    SubscriptionInfo? subInfo,
-    bool showActionButton,
-    VoidCallback onTap,
-    bool squareBottom,
-  ) {
-    return Semantics(
-      button: true,
-      sortKey: isMain ? const OrdinalSortKey(0) : null,
-      focused: isMain,
-      liveRegion: isMain,
-      namesRoute: isMain,
-      label: isMain ? t.pages.profiles.viewAllProfiles : null,
-      child: InkWell(
-        borderRadius: showActionButton
-            ? ProfileTileConst.endBorderRadius(Directionality.of(context), squareBottom: squareBottom)
-            : (squareBottom ? ProfileTileConst.topOnlyBorderRadius : ProfileTileConst.cardBorderRadius),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _title(t, theme),
-              if (subInfo != null) ...[
-                const Gap(4),
-                RemainingTrafficIndicator(subInfo.ratio),
-                const Gap(4),
-                ProfileSubscriptionInfo(subInfo),
-                const Gap(4),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Profile name with a trailing affordance: a dropdown on the main card, or a
-  /// pin badge on list rows when the profile is pinned.
-  Widget _title(TranslationsEn t, ThemeData theme) {
-    final nameText = Text(
-      profile.name,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: theme.textTheme.titleMedium?.copyWith(fontFamily: PlatformUtils.isWindows ? FontFamily.emoji : null),
-      semanticsLabel: isMain || profile.active
-          ? t.pages.profiles.activeProfileName(name: profile.name)
-          : t.pages.profiles.nonActiveProfileName(name: profile.name),
-    );
-
-    final Widget? trailing = isMain
-        ? const Icon(Icons.arrow_drop_down_rounded)
-        : profile.pinned
-        ? Icon(Icons.push_pin, size: 16, color: theme.colorScheme.onSurfaceVariant)
-        : null;
-
-    if (trailing == null) return nameText;
-
-    final row = Row(
+    if (!showLinks) return card;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(child: nameText),
-        Padding(padding: const EdgeInsetsDirectional.only(start: 8), child: trailing),
+        card,
+        ProfileLinkButtons(webPageUrl: remote.webPageUrl, supportUrl: remote.supportUrl),
       ],
     );
-    if (!isMain) return row;
-
-    // On the main card the title is wrapped so it reads as a single affordance.
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: row);
   }
 }
 
 class ProfileActionButton extends HookConsumerWidget {
-  const ProfileActionButton(this.profile, this.showAllActions, {super.key, this.squareBottom = false});
+  const ProfileActionButton(this.profile, this.showAllActions, {super.key});
 
   final ProfileEntity profile;
   final bool showAllActions;
 
-  /// Zeroes this button's bottom corner, matching the card when a link chip
-  /// is attached flush below it.
-  final bool squareBottom;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
-    final update = ref.watch(updateProfileNotifierProvider(profile.id));
-    final isUpdating = update.isLoading;
-    // Success/failure flash is derived straight from the provider state, which
-    // UpdateProfileNotifier holds for 2s then resets. It lives in the provider
-    // (not widget state), so it survives the list re-sorting after an update.
-    final bool? outcome = isUpdating
-        ? null
-        : update.hasError
-        ? false
-        : (update.value != null ? true : null);
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      transitionBuilder: (child, animation) => FadeTransition(
-        opacity: CurvedAnimation(
-          parent: animation,
-          curve: const Interval(0, 0.6, curve: Curves.easeOut),
-          reverseCurve: Curves.easeIn,
-        ),
-        child: ScaleTransition(
-          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack, reverseCurve: Curves.easeIn),
-          child: child,
-        ),
-      ),
-      // Expand children so the interactive leading keeps its full tap target.
-      layoutBuilder: (currentChild, previousChildren) => Stack(
-        fit: StackFit.expand,
-        alignment: Alignment.center,
-        children: [...previousChildren, if (currentChild != null) currentChild],
-      ),
-      child: _leading(context, ref, t, isUpdating, outcome),
-    );
-  }
-
-  /// The current leading content. Each state carries a distinct key so the
-  /// [AnimatedSwitcher] cross-fades between them.
-  Widget _leading(BuildContext context, WidgetRef ref, TranslationsEn t, bool isUpdating, bool? outcome) {
-    if (profile case RemoteProfileEntity()) {
-      // While updating, the leading is a spinning indicator; its action is blocked.
-      if (isUpdating) {
-        return Semantics(
-          key: const ValueKey('updating'),
-          label: t.pages.profiles.update,
-          liveRegion: true,
-          child: Tooltip(message: t.pages.profiles.update, child: const _UpdatingIndicator()),
-        );
-      }
-
-      // Transient success/failure feedback shown for 2s right after the spinner.
-      if (outcome case final success?) {
-        return Semantics(
-          key: ValueKey(success),
-          label: success ? t.pages.profiles.msg.update.success : t.pages.profiles.msg.update.failure,
-          liveRegion: true,
-          child: Icon(
-            success ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
-            color: success ? Colors.green : Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-
-      if (!showAllActions) {
-        return Semantics(
-          key: const ValueKey('update'),
-          button: true,
-          child: Tooltip(
-            message: t.pages.profiles.update,
-            child: InkWell(
-              borderRadius: ProfileTileConst.startBorderRadius(Directionality.of(context), squareBottom: squareBottom),
-              onTap: () => ref
-                  .read(updateProfileNotifierProvider(profile.id).notifier)
-                  .updateProfile(profile as RemoteProfileEntity),
-              child: const Icon(Icons.sync_rounded),
+    if (profile case RemoteProfileEntity() when !showAllActions) {
+      return Semantics(
+        button: true,
+        enabled: !ref.watch(updateProfileNotifierProvider(profile.id)).isLoading,
+        child: InkWell(
+          borderRadius: ProfileTileConst.endBorderRadius(Directionality.of(context)),
+          onTap: () {
+            if (ref.read(updateProfileNotifierProvider(profile.id)).isLoading) {
+              return;
+            }
+            ref.read(updateProfileNotifierProvider(profile.id).notifier).updateProfile(profile as RemoteProfileEntity);
+          },
+          child: Center(
+            child: Text(
+              t.pages.profiles.update,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppTheme.nerpaAccent, fontWeight: FontWeight.w600),
             ),
           ),
-        );
-      }
+        ),
+      );
     }
     return ProfileActionsMenu(profile, (context, toggleVisibility, _) {
       return Semantics(
         button: true,
-        child: Tooltip(
-          message: MaterialLocalizations.of(context).showMenuTooltip,
-          child: InkWell(
-            borderRadius: ProfileTileConst.startBorderRadius(Directionality.of(context), squareBottom: squareBottom),
-            onTap: toggleVisibility,
-            child: Icon(AdaptiveIcon(context).more),
+        child: InkWell(
+          borderRadius: ProfileTileConst.endBorderRadius(Directionality.of(context)),
+          onTap: toggleVisibility,
+          child: Center(
+            child: Text(
+              MaterialLocalizations.of(context).showMenuTooltip,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppTheme.nerpaTextSecondary, fontWeight: FontWeight.w600),
+            ),
           ),
         ),
       );
-    }, key: const ValueKey('menu'));
-  }
-}
-
-/// A minimal, continuously spinning icon shown in the leading slot while a
-/// remote profile is being updated.
-class _UpdatingIndicator extends StatefulWidget {
-  const _UpdatingIndicator();
-
-  @override
-  State<_UpdatingIndicator> createState() => _UpdatingIndicatorState();
-}
-
-class _UpdatingIndicatorState extends State<_UpdatingIndicator> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))
-    ..repeat();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: ReverseAnimation(_controller),
-      child: Icon(Icons.sync_rounded, color: Theme.of(context).colorScheme.onSurface),
-    );
+    });
   }
 }
 
@@ -348,15 +364,9 @@ class ProfileActionsMenu extends HookConsumerWidget {
     final t = ref.watch(translationsProvider).requireValue;
 
     final menuItems = [
-      AdaptiveMenuItem(
-        title: profile.pinned ? t.common.unpin : t.common.pin,
-        leadingIcon: Icon(profile.pinned ? Icons.push_pin : Icons.push_pin_outlined),
-        onTap: () => ref.read(profilesNotifierProvider.notifier).togglePin(profile),
-      ),
       if (profile case RemoteProfileEntity())
         AdaptiveMenuItem(
           title: t.common.update,
-          leadingIcon: const Icon(Icons.sync_rounded),
           onTap: () {
             if (ref.read(updateProfileNotifierProvider(profile.id)).isLoading) {
               return;
@@ -366,7 +376,6 @@ class ProfileActionsMenu extends HookConsumerWidget {
         ),
       AdaptiveMenuItem(
         title: t.common.share,
-        leadingIcon: Icon(AdaptiveIcon(context).share),
         subItems: [
           if (profile case RemoteProfileEntity(:final url, :final name)) ...[
             AdaptiveMenuItem(
@@ -400,15 +409,14 @@ class ProfileActionsMenu extends HookConsumerWidget {
         ],
       ),
       AdaptiveMenuItem(
-        leadingIcon: const Icon(Icons.edit_rounded),
         title: t.common.edit,
         onTap: () {
           if (Breakpoint(context).isMobile()) context.pop();
           context.goNamed('profileDetails', pathParameters: {'id': profile.id});
         },
       ),
+      // if (!profile.active)
       AdaptiveMenuItem(
-        leadingIcon: const Icon(Icons.delete_outline_rounded),
         title: t.common.delete,
         onTap: () async => await ref
             .read(dialogNotifierProvider.notifier)
@@ -427,12 +435,353 @@ class ProfileActionsMenu extends HookConsumerWidget {
   }
 }
 
-/// Provider links from the `profile-web-page-url` / `support-url` subscription
-/// headers, rendered as a single full-width pill below the main card.
-///
-/// One link fills the row as a static chip. Two links share the slot and
-/// swap every few seconds: the current chip slides fully up and out, then
-/// the next slides down from the top into place.
+// TODO add support url
+
+/// v2RayTun parity: shows the provider's `announce` subscription header.
+/// Providers (e.g. 3ApesVPN) send base64-encoded notices here — maintenance
+/// info, "try servers marked LTE", tariff expiry warnings. Also honored in
+/// v2RayTun; Nerpa shows it as a dismissible-looking banner on the profile card.
+class ProfileAnnounceBanner extends HookConsumerWidget {
+  const ProfileAnnounceBanner(this.headers, {super.key});
+
+  final Map<String, dynamic> headers;
+
+  static String? _decodeHeader(dynamic raw) {
+    if (raw is! String || raw.isEmpty) return null;
+    if (raw.startsWith('base64:')) {
+      try {
+        return utf8.decode(base64.decode(raw.replaceFirst('base64:', '')));
+      } catch (_) {
+        return raw;
+      }
+    }
+    return raw;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = _decodeHeader(headers['announce']);
+    if (text == null || text.trim().isEmpty) return const SizedBox.shrink();
+    final url = _decodeHeader(headers['announce-url']);
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: (url == null || url.isEmpty) ? null : () => launchUrl(Uri.parse(url)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.nerpaAccent.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.nerpaAccent.withValues(alpha: 0.16)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(FluentIcons.alert_16_regular, size: 15, color: AppTheme.nerpaAccent),
+            const Gap(8),
+            Expanded(
+              child: Text(
+                text.trim(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppTheme.nerpaTextPrimary.withValues(alpha: 0.88),
+                  height: 1.35,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: PlatformUtils.isWindows ? FontFamily.emoji : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProfileSubscriptionInfo extends HookConsumerWidget {
+  const ProfileSubscriptionInfo(this.subInfo, {super.key});
+
+  final SubscriptionInfo subInfo;
+
+  (String, Color?) remainingText(TranslationsEn t, ThemeData theme) {
+    if (subInfo.isExpired) {
+      return (t.components.subscriptionInfo.expired, theme.colorScheme.error);
+    } else if (subInfo.ratio >= 1) {
+      return (t.components.subscriptionInfo.noTraffic, theme.colorScheme.error);
+    } else if (subInfo.remaining.inDays > 365) {
+      return (t.components.subscriptionInfo.remainingUnlimited, null);
+    } else {
+      return (t.components.subscriptionInfo.remainingDuration(days: subInfo.remaining.inDays), null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final theme = Theme.of(context);
+
+    final remaining = remainingText(t, theme);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.nerpaAccent.withValues(alpha: 0.14),
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 7,
+                      height: 7,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: AppTheme.nerpaAccent, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(10),
+                Flexible(
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      subInfo.total >
+                              10 *
+                                  1099511627776 //10TB
+                          ? "∞ GiB"
+                          : subInfo.consumption.sizeOf(subInfo.total),
+                      semanticsLabel: t.components.subscriptionInfo.remainingTrafficSemanticLabel(
+                        consumed: subInfo.consumption.sizeGB(),
+                        total: subInfo.total.sizeGB(),
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppTheme.nerpaTextPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Gap(12),
+          Flexible(
+            child: Text(
+              remaining.$1,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: remaining.$2 ?? AppTheme.nerpaTextSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// TODO add support url
+class NewTrafficSubscriptionInfo extends HookConsumerWidget {
+  const NewTrafficSubscriptionInfo(this.subInfo, {super.key});
+
+  final SubscriptionInfo subInfo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+
+    return Column(
+      children: [
+        const Icon(Icons.assessment_rounded, color: Colors.blue),
+        Text(t.components.subscriptionInfo.remainingTraffic),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                subInfo.total >
+                        10 *
+                            1099511627776 //10TB
+                    ? "∞ GiB"
+                    : subInfo.consumption.sizeOf(subInfo.total),
+                semanticsLabel: t.components.subscriptionInfo.remainingTrafficSemanticLabel(
+                  consumed: subInfo.consumption.sizeGB(),
+                  total: subInfo.total.sizeGB(),
+                ),
+                // style: theme.textTheme.body,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// TODO add support url
+class NewDaySubscriptionInfo extends HookConsumerWidget {
+  const NewDaySubscriptionInfo(this.subInfo, {super.key});
+
+  final SubscriptionInfo subInfo;
+
+  (String, Color?) remainingText(TranslationsEn t, ThemeData theme) {
+    if (subInfo.isExpired) {
+      return (t.components.subscriptionInfo.expired, theme.colorScheme.error);
+    } else if (subInfo.ratio >= 1) {
+      return (t.components.subscriptionInfo.noTraffic, theme.colorScheme.error);
+    } else if (subInfo.remaining.inDays > 365) {
+      return (t.components.subscriptionInfo.remainingUnlimited, null);
+    } else {
+      return (t.components.subscriptionInfo.remainingDuration(days: subInfo.remaining.inDays), null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final theme = Theme.of(context);
+
+    final remaining = remainingText(t, theme);
+    return Column(
+      children: [
+        const Icon(Icons.timer, color: Colors.blue),
+        Text(t.components.subscriptionInfo.remainingTime),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                remaining.$1,
+                // style: theme.textTheme.bodySmall?.copyWith(color: remaining.$2),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// TODO add support url
+class NewDayTrafficSubscriptionInfo extends HookConsumerWidget {
+  const NewDayTrafficSubscriptionInfo(this.subInfo, {super.key});
+
+  final SubscriptionInfo subInfo;
+
+  (String, Color?) remainingText(TranslationsEn t, ThemeData theme) {
+    if (subInfo.isExpired) {
+      return (t.components.subscriptionInfo.expired, theme.colorScheme.error);
+    } else if (subInfo.ratio >= 1) {
+      return (t.components.subscriptionInfo.noTraffic, theme.colorScheme.error);
+    } else if (subInfo.remaining.inDays > 365) {
+      return (t.components.subscriptionInfo.remainingUnlimited, null);
+    } else {
+      return (t.components.subscriptionInfo.remainingDuration(days: subInfo.remaining.inDays), null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final theme = Theme.of(context);
+
+    final remaining = remainingText(t, theme);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.assessment_rounded, color: Colors.blue),
+        Text(t.components.subscriptionInfo.remainingUsage),
+        const SizedBox(height: 4),
+        Text(
+          remaining.$1,
+          // style: theme.textTheme.bodySmall?.copyWith(color: remaining.$2),
+          overflow: TextOverflow.ellipsis,
+        ),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Text(
+            subInfo.total >
+                    10 *
+                        1099511627776 //10TB
+                ? "∞ GiB"
+                : subInfo.consumption.sizeOf(subInfo.total),
+            semanticsLabel: t.components.subscriptionInfo.remainingTrafficSemanticLabel(
+              consumed: subInfo.consumption.sizeGB(),
+              total: subInfo.total.sizeGB(),
+            ),
+            // style: theme.textTheme.body,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// TODO change colors
+class RemainingTrafficIndicator extends StatelessWidget {
+  const RemainingTrafficIndicator(this.ratio, {super.key});
+
+  final double ratio;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = ratio.clamp(0.0, 1.0);
+    final color = progress >= 0.9
+        ? AppTheme.nerpaError
+        : progress >= 0.7
+        ? AppTheme.nerpaWarning
+        : AppTheme.nerpaAccent;
+
+    return Stack(
+      children: [
+        Container(
+          height: 10,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: LinearGradient(
+              colors: [Colors.white.withValues(alpha: 0.08), Colors.white.withValues(alpha: 0.03)],
+            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+          ),
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 10,
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class ProfileLinkButtons extends HookConsumerWidget {
   const ProfileLinkButtons({super.key, this.webPageUrl, this.supportUrl});
 
@@ -562,9 +911,6 @@ class ProfileLinkButtons extends HookConsumerWidget {
   }
 }
 
-/// Cycles [items] one at a time: holds for [holdDuration], slides fully out
-/// upward over [slideDuration], swaps content while hidden, then slides the
-/// next item down from the top into place.
 class _LinkChipCarousel extends HookConsumerWidget {
   const _LinkChipCarousel({required this.items});
 
@@ -628,70 +974,3 @@ class _LinkChipCarousel extends HookConsumerWidget {
   }
 }
 
-class ProfileSubscriptionInfo extends HookConsumerWidget {
-  const ProfileSubscriptionInfo(this.subInfo, {super.key});
-
-  final SubscriptionInfo subInfo;
-
-  (String, Color?) remainingText(TranslationsEn t, ThemeData theme) {
-    if (subInfo.isExpired) {
-      return (t.components.subscriptionInfo.expired, theme.colorScheme.error);
-    } else if (subInfo.ratio >= 1) {
-      return (t.components.subscriptionInfo.noTraffic, theme.colorScheme.error);
-    } else if (subInfo.remaining.inDays > 365) {
-      return (t.components.subscriptionInfo.remainingUnlimited, null);
-    } else {
-      return (t.components.subscriptionInfo.remainingDuration(days: subInfo.remaining.inDays), null);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = ref.watch(translationsProvider).requireValue;
-    final theme = Theme.of(context);
-
-    final remaining = remainingText(t, theme);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: Flexible(
-            child: Text(
-              subInfo.total >
-                      10 *
-                          1099511627776 //10TB
-                  ? "∞ GiB"
-                  : subInfo.consumption.sizeOf(subInfo.total),
-              semanticsLabel: t.components.subscriptionInfo.remainingTrafficSemanticLabel(
-                consumed: subInfo.consumption.sizeGB(),
-                total: subInfo.total.sizeGB(),
-              ),
-              style: theme.textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-        Flexible(
-          child: Text(
-            remaining.$1,
-            style: theme.textTheme.bodySmall?.copyWith(color: remaining.$2),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// TODO change colors
-class RemainingTrafficIndicator extends StatelessWidget {
-  const RemainingTrafficIndicator(this.ratio, {super.key});
-
-  final double ratio;
-
-  @override
-  Widget build(BuildContext context) {
-    return LinearProgressIndicator(value: ratio, borderRadius: BorderRadius.circular(16), minHeight: 6);
-  }
-}

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:hiddify/core/http_client/dio_http_client.dart';
-import 'package:hiddify/core/http_client/http_client_provider.dart';
-import 'package:hiddify/core/model/region.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/core/http_client/dio_http_client.dart';
+import 'package:nerpa_vpn/core/http_client/http_client_provider.dart';
+import 'package:nerpa_vpn/core/model/region.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum AutoSelectionResult { success, failure, notFound }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/core/model/trusted_links.dart';
+import 'package:nerpa_vpn/core/model/trusted_links.dart';
 
 void main() {
   // Seed under test: hiddify.com, github.com/hiddify, t.me/hiddify

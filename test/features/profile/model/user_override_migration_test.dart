@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
 
 void main() {
   /// Build a stored v1 record (the shape written before extraSecurity/fragment).

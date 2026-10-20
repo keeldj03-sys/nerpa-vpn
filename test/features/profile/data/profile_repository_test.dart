@@ -3,16 +3,16 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hiddify/core/db/db.dart';
-import 'package:hiddify/features/profile/data/profile_data_mapper.dart';
-import 'package:hiddify/features/profile/data/profile_data_source.dart';
-import 'package:hiddify/features/profile/data/profile_parser.dart';
-import 'package:hiddify/features/profile/data/profile_path_resolver.dart';
-import 'package:hiddify/features/profile/data/profile_repository.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/model/profile_failure.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
-import 'package:hiddify/hiddifycore/hiddify_core_service.dart';
+import 'package:nerpa_vpn/core/db/db.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_mapper.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_source.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_parser.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_path_resolver.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_repository.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_failure.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/hiddifycore/hiddify_core_service.dart';
 
 /// Writes the temp file inside the task, like the real download does.
 class _FakeParser implements ProfileParser {

@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:hiddify/core/analytics/analytics_filter.dart';
-import 'package:hiddify/core/logger/sinks/sentry_sink.dart';
+import 'package:nerpa_vpn/core/analytics/analytics_filter.dart';
+import 'package:nerpa_vpn/core/logger/sinks/sentry_sink.dart';
 
-import 'package:hiddify/core/model/environment.dart';
-import 'package:hiddify/core/preferences/preferences_provider.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/model/environment.dart';
+import 'package:nerpa_vpn/core/preferences/preferences_provider.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';

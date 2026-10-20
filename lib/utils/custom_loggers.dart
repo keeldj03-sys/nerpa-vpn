@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 // names — trace, debug, error, fatal. A Dart extension is only visible where it
 // is imported, so without this line each of the ~200 call sites would need its
 // own import.
-export 'package:hiddify/core/logger/log_level_compat.dart';
+export 'package:nerpa_vpn/core/logger/log_level_compat.dart';
 
 /// Every logger name starts with the layer it came from, and nothing outside
 /// this file is allowed to build a `Logger` directly. That is what keeps the

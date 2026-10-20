@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/singbox/model/singbox_config_enum.dart';
+import 'package:nerpa_vpn/singbox/model/singbox_config_enum.dart';
 
 void main() {
   test('only warp and psiphon are selectable for now', () {

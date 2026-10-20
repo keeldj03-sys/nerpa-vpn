@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/region.dart';
-import 'package:hiddify/features/settings/widget/preference_tile.dart';
+import 'package:nerpa_vpn/core/localization/translations.dart';
+import 'package:nerpa_vpn/core/model/region.dart';
+import 'package:nerpa_vpn/features/settings/widget/preference_tile.dart';
 
 void main() {
   group('Region labels across locales', () {

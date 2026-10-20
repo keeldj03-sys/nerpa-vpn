@@ -1,22 +1,14 @@
-name: hiddify
-description: Cross Platform Multi Protocol Proxy Frontend.
+name: nerpa_vpn
+description: Nerpa VPN — Fast & Secure Multi-Protocol VPN Client.
 publish_to: "none"
-version: 5.0.0+50000
+version: 1.0.0+1
 
 environment:
   sdk: ^3.10.4
-  # ! IMPORTANT !
-  # This SDK version is strictly required and must not be removed.
-  # It is parsed/grep-ed by Makefile and Dockerfile to configure the build environment.
-  # Ensure this matches the target Flutter version.
   flutter: ^3.38.5
   
 dependencies:
   flutter:
-    sdk: flutter
-  # Debug-only, like accessibility_tools: the two lib/main*.dart entrypoints
-  # gate it behind kDebugMode, so release builds tree-shake it away.
-  flutter_driver:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
@@ -46,7 +38,7 @@ dependencies:
   # protocol_handler: ^0.2.0
   flutter_native_splash: ^2.3.10
   share_plus: ^10.1.0
-  window_manager: ^0.5.0
+  window_manager: 0.5.2
   tray_manager: ^0.5.0
   # get list of connected monitors (on Desktops), including their size and position
   screen_retriever: ^0.2.0
@@ -61,7 +53,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.28
 
   path: ^1.9.0
-  logging: ^1.3.0
+  loggy: ^2.0.3
   meta: ^1.15.0
   dartx: ^1.2.0
   uuid: ^4.3.3
@@ -74,8 +66,8 @@ dependencies:
   gap: ^3.0.1
   # percent_indicator_premium: ^0.0.2
   sliver_tools: ^0.2.12
-  font_awesome_flutter: ^10.7.0
   upgrader: ^11.3.0
+  toastification: ^2.3.0
   version: ^3.0.2
   qr_flutter: ^4.1.0
   flutter_displaymode: ^0.6.0
@@ -83,6 +75,10 @@ dependencies:
   cupertino_http: ^2.0.1
   dart_mappable: ^4.2.1
   fluentui_system_icons: ^1.1.229
+  simple_icons: 16.23.0
+  font_awesome_flutter: ^10.7.0
+  logging: ^1.3.0
+  archive: ^4.0.4
   json_path: ^0.7.1
   # permission_handler: ^11.3.0 # is not compatible with windows
   #flutter_easy_permission: ^1.1.2
@@ -102,15 +98,12 @@ dependencies:
   dynamic_color: ^1.7.0
   flutter_typeahead: ^5.0.1
   # flutter_platform_widgets: ^7.0.1
-  simple_icons: ^10.1.3
   basic_utils: ^5.7.0
   text_scroll: ^0.2.0
   flutter_markdown_plus: ^1.0.6
   # platform-specific  settings
   # https://github.com/miguelpruivo/flutter_file_picker/wiki/Setup
   file_picker: ^8.1.7
-  # Used for reading the .zip files picked in the profile file import
-  archive: ^4.0.4
   installed_apps: # ^1.5.2
     git: https://github.com/VB10/installed_apps
 
@@ -125,9 +118,15 @@ dependencies:
   # Used for registering custom schemes in the Windows registry
   win32: ^5.12.0
   humanizer: ^3.0.1
+  video_player: ^2.13.0
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  flutter_driver:
     sdk: flutter
   lint: ^2.3.0
   build_web_compilers: ^4.0.11
@@ -149,6 +148,7 @@ flutter:
     # - assets/core/geoip.db
     # - assets/core/geosite.db
     - assets/images/logo.svg
+    - assets/images/app_icon.png
     - assets/images/tray_icon.ico
     - assets/images/tray_icon.png
     - assets/images/tray_icon_dark.ico
@@ -159,8 +159,11 @@ flutter:
     - assets/images/tray_icon_disconnected.png
     - assets/images/connect_norouz.PNG
     - assets/images/disconnect_norouz.PNG
+    - assets/images/fone.png
     - assets/images/world_map.png
     - assets/images/source/ic_launcher_border.png
+    - assets/videos/nerpa.mp4
+    - assets/presets/presets.json
 
   fonts:
     - family: Shabnam

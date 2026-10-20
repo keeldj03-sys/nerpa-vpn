@@ -48,32 +48,26 @@ bool SendAppLinkToInstance(const std::wstring &title)
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command)
 {
-
-  // Replace "example" with the generated title found as parameter of `window.Create` in this file.
-  // You may ignore the result if you need to create another window.
-  if (SendAppLinkToInstance(L"Hiddify"))
+  // Check for existing instance and forward app link if found
+  if (SendAppLinkToInstance(L"Nerpa VPN"))
   {
     return EXIT_SUCCESS;
   }
 
-  HANDLE hMutexInstance = CreateMutex(NULL, TRUE, L"HiddifyMutex");
-  HWND handle = FindWindowA(NULL, "Hiddify");
-
-  if (GetLastError() == ERROR_ALREADY_EXISTS)
+  // Single instance mutex - only block if another instance is truly running
+  HANDLE hMutexInstance = CreateMutex(NULL, TRUE, L"NerpaVPNMutex");
+  if (hMutexInstance != NULL && GetLastError() == ERROR_ALREADY_EXISTS)
   {
-    flutter::DartProject project(L"data");
-    std::vector<std::string> command_line_arguments = GetCommandLineArguments();
-    project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
-    FlutterWindow window(project);
-    if (window.SendAppLinkToInstance(L"Hiddify"))
+    // Another instance exists - bring its window to front and exit
+    HWND handle = FindWindowW(NULL, L"Nerpa VPN");
+    if (handle != NULL)
     {
-      return false;
+      ShowWindow(handle, SW_NORMAL);
+      SetForegroundWindow(handle);
     }
-
-    WINDOWPLACEMENT place = {sizeof(WINDOWPLACEMENT)};
-    GetWindowPlacement(handle, &place);
-    ShowWindow(handle, SW_NORMAL);
-    return 0;
+    ReleaseMutex(hMutexInstance);
+    CloseHandle(hMutexInstance);
+    return EXIT_SUCCESS;
   }
 
   // Attach to console when present (e.g., 'flutter run') or create a
@@ -97,7 +91,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"Hiddify", origin, size))
+  if (!window.Create(L"Nerpa VPN", origin, size))
   {
     return EXIT_FAILURE;
   }
@@ -111,6 +105,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   ::CoUninitialize();
-  ReleaseMutex(hMutexInstance);
+  if (hMutexInstance != NULL)
+  {
+    ReleaseMutex(hMutexInstance);
+    CloseHandle(hMutexInstance);
+  }
   return EXIT_SUCCESS;
 }

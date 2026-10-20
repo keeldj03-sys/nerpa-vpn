@@ -1,12 +1,12 @@
-import 'package:hiddify/core/db/provider/db_providers.dart';
-import 'package:hiddify/core/directories/directories_provider.dart';
-import 'package:hiddify/core/http_client/http_client_provider.dart';
-import 'package:hiddify/features/profile/data/profile_data_source.dart';
-import 'package:hiddify/features/profile/data/profile_parser.dart';
-import 'package:hiddify/features/profile/data/profile_path_resolver.dart';
-import 'package:hiddify/features/profile/data/profile_repository.dart';
-import 'package:hiddify/features/settings/data/config_option_data_providers.dart';
-import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
+import 'package:nerpa_vpn/core/db/provider/db_providers.dart';
+import 'package:nerpa_vpn/core/directories/directories_provider.dart';
+import 'package:nerpa_vpn/core/http_client/http_client_provider.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_source.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_parser.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_path_resolver.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_repository.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_data_providers.dart';
+import 'package:nerpa_vpn/hiddifycore/hiddify_core_service_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

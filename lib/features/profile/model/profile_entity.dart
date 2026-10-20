@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hiddify/features/profile/data/profile_parser.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_parser.dart';
 
 part 'profile_entity.freezed.dart';
 part 'profile_entity.g.dart';
@@ -59,6 +59,10 @@ class SubscriptionInfo with _$SubscriptionInfo {
     required int download,
     required int total,
     required DateTime expire,
+    // `profile-web-page-url` / `support-url` headers; independent of subInfo,
+    // which only exists when the `subscription-userinfo` header is present.
+    String? webPageUrl,
+    String? supportUrl,
   }) = _SubscriptionInfo;
 
   bool get isExpired => expire <= DateTime.now();

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/singbox/model/core_status.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/singbox/model/core_status.dart';
 
 void main() {
   group('CoreStatus.fromCoreInfo', () {

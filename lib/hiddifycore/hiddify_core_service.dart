@@ -1,27 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:grpc/grpc.dart';
-import 'package:hiddify/core/directories/directories_provider.dart';
-import 'package:hiddify/core/logger/core_logger.dart';
-import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/features/connection/model/connection_failure.dart';
-import 'package:hiddify/features/log/model/log_level.dart' as config_log_level;
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
-import 'package:hiddify/hiddifycore/core_interface/core_interface_wrapper_stub.dart'
-    if (dart.library.io) 'package:hiddify/hiddifycore/core_interface/core_interface_wrapper.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcommon/common.pb.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore_service.pbgrpc.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
-import 'package:hiddify/singbox/model/core_status.dart';
-import 'package:hiddify/singbox/model/singbox_config_option.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
-import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart' as logging;
+import 'package:nerpa_vpn/core/directories/directories_provider.dart';
+import 'package:nerpa_vpn/core/logger/core_logger.dart';
+import 'package:nerpa_vpn/core/notification/in_app_notification_controller.dart';
+import 'package:nerpa_vpn/features/connection/model/connection_failure.dart';
+import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcommon/common.pb.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcommon/common.pb.dart' as common;
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore_service.pbgrpc.dart';
+import 'package:nerpa_vpn/hiddifycore/init_signal.dart';
+import 'package:nerpa_vpn/singbox/model/singbox_config_option.dart';
+import 'package:nerpa_vpn/features/log/model/log_level.dart' as config_log_level;
+import 'package:nerpa_vpn/singbox/model/core_status.dart';
+
+import 'package:nerpa_vpn/hiddifycore/core_interface/core_interface_wrapper_stub.dart'
+    if (dart.library.io) 'package:nerpa_vpn/hiddifycore/core_interface/core_interface_wrapper.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/utils/platform_utils.dart';
 import 'package:rxdart/rxdart.dart';
 
 class HiddifyCoreService with InfraLogger {
@@ -33,9 +35,23 @@ class HiddifyCoreService with InfraLogger {
 
   CoreStatus currentState = const CoreStatus.stopped();
   final statusController = BehaviorSubject<CoreStatus>();
+  final logController = BehaviorSubject<List<LogMessage>>();
   final CallOptions? grpcOptions = null; //CallOptions(timeout: const Duration(milliseconds: 10000));
   final Map<String, StreamSubscription?> subscriptions = {};
+  bool disposed = false;
   List<OutboundGroup> latest = [];
+  final activeGroupsController = BehaviorSubject<List<OutboundGroup>>.seeded(const []);
+
+  void _updateActiveGroups(List<OutboundGroup> groups, {required String source}) {
+    if (groups.isEmpty && latest.isNotEmpty) {
+      loggy.warning('active groups snapshot [$source] is empty; keeping latest snapshot [${latest.length}]');
+      return;
+    }
+    latest = List<OutboundGroup>.unmodifiable(groups);
+    activeGroupsController.add(latest);
+  }
+
+  Stream<List<OutboundGroup>> watchActiveGroupsSnapshot() => activeGroupsController.stream;
 
   Future<void> init() async {
     await setup()
@@ -139,12 +155,6 @@ class HiddifyCoreService with InfraLogger {
         statusController.add(currentState = const CoreStatus.stopped());
         return left(background.getCoreAlert() ?? const ConnectionFailure.unexpected("failed to start core"));
       }
-      // Armed again on every connect, not only when there are two channels.
-      // listenSingle drops a subscription for good when its stream errors, and
-      // a gRPC connection being terminated does exactly that, so a listener
-      // armed once at setup does not survive the engine restarting. Re-listening
-      // is idempotent: listenSingle cancels the previous one for the same key.
-      await startListeningLogs("fg", core.fgClient);
       if (!core.isSingleChannel()) {
         await startListeningLogs("bg", core.bgClient);
         await startListeningStatus("bg", core.bgClient);
@@ -185,25 +195,14 @@ class HiddifyCoreService with InfraLogger {
       } on GrpcError catch (e) {
         loggy.error("failed to start bg core: $e");
         ref.read(coreRestartSignalProvider.notifier).restart();
-        final message = e.message ?? "";
         if (e.code == StatusCode.unavailable) {
           return left(const ConnectionFailure.unexpected("background core is not started yet!"));
         }
-        if (message.isEmpty) {
-          return left(const ConnectionFailure.unexpected("failed to start background core"));
-        }
-        // Go words Windows errors in English, so the two texts below match on every system language.
-        // Windows refuses the TUN adapter to a process that is not elevated.
-        if (message.contains("start inbound/tun[tun-in]: configure tun interface: Access is denied.")) {
-          return left(const ConnectionFailure.missingPrivilege());
-        }
-        // Another adapter already has the address the core gives its TUN (172.19.0.1).
-        if (message.contains(
-          "start inbound/tun[tun-in]: configure tun interface: set ipv4 address: The object already exists.",
-        )) {
-          return left(const ConnectionFailure.tunAddressInUse());
-        }
-        return left(ConnectionFailure.unexpected(message));
+        return left(ConnectionFailure.unexpected("failed to start background core: ${e.message ?? e.codeName}"));
+      } catch (e, stack) {
+        loggy.error("failed to start bg core (non-grpc): $e", e, stack);
+        ref.read(coreRestartSignalProvider.notifier).restart();
+        return left(ConnectionFailure.unexpected("failed to start background core: $e"));
       }
 
       // if (res.messageType != MessageType.EMPTY) return left(res);
@@ -333,16 +332,28 @@ class HiddifyCoreService with InfraLogger {
     }
 
     try {
-      yield* core.bgClient
-          .mainOutboundsInfo(Empty())
-          .map((event) {
-            return latest = event.items.toList();
-          })
-          .startWith(latest);
+      yield* _watchActiveGroupsFromClient(core.bgClient, source: 'bg');
+    } on GrpcError catch (error) {
+      loggy.warning("active groups bg stream failed, retrying via fg", error, StackTrace.current);
+      yield* _watchActiveGroupsFromClient(core.fgClient, source: 'fg');
     } catch (e) {
       loggy.error("error watching active groups: $e");
       rethrow;
     }
+  }
+
+  Stream<List<OutboundGroup>> _watchActiveGroupsFromClient(CoreClient client, {required String source}) {
+    // outboundsInfo (onlyMain=false) exposes every node of the subscription,
+    // while mainOutboundsInfo only exposes the currently selected one per
+    // group. The proxies overview needs all nodes to let the user pick one.
+    return client.outboundsInfo(Empty()).map((event) {
+      final groups = event.items.toList(growable: false);
+      loggy.info(
+        "active groups event [$source]: ${groups.map((group) => "groupTag=[${group.tag}] selected=[${group.selected}] items=[${group.items.map((item) => "${item.tag}:${item.isSelected}").join(',')}]").join(' | ')}",
+      );
+      _updateActiveGroups(groups, source: source);
+      return latest;
+    });
   }
 
   //
@@ -360,20 +371,62 @@ class HiddifyCoreService with InfraLogger {
 
   TaskEither<String, Unit> selectOutbound(String groupTag, String outboundTag) {
     return TaskEither(() async {
-      loggy.debug("selecting outbound");
+      loggy.info("selectOutbound request: groupTag=[$groupTag], outboundTag=[$outboundTag]");
       try {
-        final res = await core.bgClient.selectOutbound(
-          SelectOutboundRequest(groupTag: groupTag, outboundTag: outboundTag),
-          options: CallOptions(timeout: const Duration(seconds: 1)),
-        );
+        final request = SelectOutboundRequest(groupTag: groupTag, outboundTag: outboundTag);
+        final res = await _selectOutboundVia(core.bgClient, request, source: 'bg').onError<GrpcError>((error, _) async {
+          loggy.warning("selectOutbound bg call failed, retrying via fg", error, StackTrace.current);
+          return _selectOutboundVia(core.fgClient, request, source: 'fg');
+        });
         if (res.code != ResponseCode.OK) return left("${res.code} ${res.message}");
 
+        // Fire-and-forget: the refreshed snapshot also arrives through the
+        // outboundsInfo stream, and awaiting it here blocked the caller (and
+        // the UI) for up to 6 seconds after every node switch.
+        unawaited(refreshActiveGroups());
         return right(unit);
       } catch (e) {
         loggy.error("error selecting outbound: $e");
         rethrow;
       }
     });
+  }
+
+  Future<void> refreshActiveGroups() async {
+    // must use outboundsInfo (all nodes) — mainOutboundsInfo would shrink the
+    // snapshot to the selected node per group and make the rest disappear.
+    // The call is fire-and-forget with a hard timeout: it must never block
+    // selectOutbound (which would spin the tile's loading indicator forever).
+    Future<void> doRefresh(CoreClient client, String source) async {
+      try {
+        final groups = await client
+            .outboundsInfo(Empty(), options: CallOptions(timeout: const Duration(seconds: 5)))
+            .first
+            .timeout(const Duration(seconds: 6));
+        _updateActiveGroups(groups.items.toList(growable: false), source: source);
+      } catch (error) {
+        loggy.warning('active groups refresh [$source] failed: $error');
+      }
+    }
+
+    await Future.wait([
+      doRefresh(core.bgClient, 'refresh-bg'),
+      if (!core.isSingleChannel()) doRefresh(core.fgClient, 'refresh-fg'),
+    ]);
+    loggy.info('active groups snapshot [refresh]: ${latest.length} groups');
+  }
+
+  Future<common.Response> _selectOutboundVia(
+    CoreClient client,
+    SelectOutboundRequest request, {
+    required String source,
+  }) async {
+    final res = await client.selectOutbound(
+      request,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+    loggy.info("selectOutbound response [$source]: code=[${res.code}], message=[${res.message}]");
+    return res;
   }
 
   TaskEither<String, Unit> urlTest(String tag) {
@@ -391,10 +444,52 @@ class HiddifyCoreService with InfraLogger {
     });
   }
 
-  // The 300-message buffer and its BehaviorSubject are gone. They existed so
-  // the logs page could show history when it opened, and only ever held the
-  // engine's lines. The in-memory ring in core/logger does that for every
-  // category, so the page reads it instead.
+  List<LogMessage> logBuffer = [];
+
+  // SingboxConfigOption? latestOptions;
+
+  Stream<List<LogMessage>> watchLogs(String path) async* {
+    if (!core.isInitialized()) {
+      loggy.debug("core is not initialized, returning empty log stream");
+      yield const <LogMessage>[];
+      return;
+    }
+    await startListeningLogs("bg", core.bgClient);
+    await startListeningLogs("fg", core.fgClient);
+    try {
+      yield* logController.stream;
+    } catch (e) {
+      loggy.error("error watching logs: $e");
+      rethrow;
+    }
+    // Stream<List<String>> logStream(CoreClient coreClient) {
+    //   return coreClient.logListener(Empty()).asBroadcastStream().map((event) => [event.message]).onErrorResume((error, stackTrace) {
+    //     loggy.debug('Error in $coreClient: $error, retrying...');
+    //     final delay = (currentState == const SingboxStatus.stopped()) ? 5 : 1;
+    //     return const Stream<List<String>>.empty().delay(Duration(seconds: delay)).concatWith([logStream(coreClient)]);
+    //   });
+    // }
+
+    // // Create streams for both fg and bg clients with retry logic
+    // final fgLogStream = logStream(core.fgClient);
+
+    // if (core.bgClient == core.fgClient) {
+    //   yield* fgLogStream;
+    //   return;
+    // }
+    // final bgLogStream = logStream(core.bgClient);
+    // yield* MergeStream([bgLogStream, fgLogStream]);
+  }
+
+  TaskEither<String, Unit> clearLogs() {
+    return TaskEither(() async {
+      loggy.debug("clearing logs");
+      logBuffer.clear();
+      // final res = await core.bgClient(Empty());
+      // if (res.code != ResponseCode.OK) return left("${res.code} ${res.message}");
+      return right(unit);
+    });
+  }
 
   // TaskEither<String, WarpResponse> generateWarpConfig({
   //   required String licenseKey,
@@ -454,10 +549,13 @@ class HiddifyCoreService with InfraLogger {
       onError: (error) {
         loggy.error("Stream error in ${key}StatusListener: $error");
 
-        // currentState = const CoreStatus.stopped();
-        // statusController.add(currentState);
-
-        // startListeningStatus(key, cc);
+        // Nerpa: gRPC streams over the local socket break whenever the core
+        // process is replaced or the HTTP/2 connection resets. Without a
+        // retry the app stays stuck on DISCONNECTED forever even though the
+        // core is up — resubscribe after a short delay.
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!disposed) startListeningStatus(key, cc);
+        });
       },
     );
   }
@@ -467,16 +565,27 @@ class HiddifyCoreService with InfraLogger {
     final coreLogLevel = getCoreLogLevel(logLevel);
     final listenKey = "${key}LogListener";
     // await stopListenSingle(listenKey);
-    await listenSingle<LogMessage>(listenKey, () {
-      return cc.logListener(LogRequest(level: coreLogLevel), options: grpcOptions).map((event) {
-        // Handle incoming event
-        // One message becomes one record. The old code split on newlines
-        // first, but the engine already sends one line per message, so the
-        // split only allocated a list and multiplied the work per burst.
-        coreLogFor(event.type).log(getLogLevel(event.level), event.message);
-        return event;
-      });
-    });
+    await listenSingle<LogMessage>(
+      listenKey,
+      () {
+        return cc.logListener(LogRequest(level: coreLogLevel), options: grpcOptions).map((event) {
+          // Handle incoming event
+          logBuffer.add(event);
+          if (logBuffer.length > 300) {
+            logBuffer.removeAt(0);
+          }
+          logController.add(logBuffer);
+          // loggy.log(getLogLevel(event.level), event.message);
+          event.message.split('\n').forEach((line) {
+            coreLogFor(event.type).log(getLogLevel(event.level), line);
+          });
+          return event;
+        });
+      },
+      onError: (error) {
+        logController.addError(error is Object ? error : error.toString(), StackTrace.current);
+      },
+    );
   }
 
   Future<void> stopListenSingle(String key) async {
@@ -509,22 +618,18 @@ class HiddifyCoreService with InfraLogger {
       (event) {
         // loggy.debug(event);
       },
-      cancelOnError: true,
+      // cancelOnError would permanently kill the status stream on any
+      // transient gRPC error, leaving the app stuck on DISCONNECTED even
+      // though the core keeps running.
+      cancelOnError: false,
       onError: (error) {
         loggy.error('Stream error: $error');
         onError?.call(error);
-        subscriptions[key]?.cancel();
-        subscriptions.remove(key);
       },
     );
     return subscriptions[key] as StreamSubscription<T>?;
   }
 
-  /// Six engine levels onto six logging levels, nothing merged.
-  ///
-  /// TRACE used to have no case here and fell into the default, so trace lines
-  /// arrived looking as important as info and could not be filtered out. FATAL
-  /// used to collapse into error because loggy had nothing above it.
   logging.Level getLogLevel(LogLevel level) {
     return switch (level) {
       LogLevel.TRACE => logging.Level.FINEST,
@@ -533,7 +638,6 @@ class HiddifyCoreService with InfraLogger {
       LogLevel.WARNING => logging.Level.WARNING,
       LogLevel.ERROR => logging.Level.SEVERE,
       LogLevel.FATAL => logging.Level.SHOUT,
-      // the proto enum is a generated class, so a default is unavoidable
       _ => logging.Level.INFO,
     };
   }
@@ -547,30 +651,23 @@ class HiddifyCoreService with InfraLogger {
       config_log_level.LogLevel.error => LogLevel.ERROR,
       config_log_level.LogLevel.fatal => LogLevel.FATAL,
       config_log_level.LogLevel.panic => LogLevel.FATAL,
-      // ignore: unreachable_switch_case
-      _ => LogLevel.INFO, // Default case
     };
   }
 
   Future<void> closeFront() async {
+    disposed = true;
     if (!core.isInitialized()) {
       return;
     }
     if (!core.isSingleChannel()) {
       await stopListenSingle("fg");
       await stopListenSingle("bg");
-      // Only one of the two modes matches how the channel was opened, so the
-      // other one always throws. Both are attempted and the failure is logged.
       try {
         await core.fgClient.close(CloseRequest(mode: SetupMode.GRPC_NORMAL_INSECURE));
-      } catch (e) {
-        loggy.debug("closing fg client in insecure mode failed: $e");
-      }
+      } catch (e) {}
       try {
         await core.fgClient.close(CloseRequest(mode: SetupMode.GRPC_NORMAL));
-      } catch (e) {
-        loggy.debug("closing fg client in normal mode failed: $e");
-      }
+      } catch (e) {}
     }
   }
 

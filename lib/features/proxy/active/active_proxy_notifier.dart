@@ -1,20 +1,20 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:hiddify/core/haptic/haptic_service.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/utils/throttler.dart';
-import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
-import 'package:hiddify/features/proxy/data/proxy_data_providers.dart';
-import 'package:hiddify/features/proxy/data/proxy_repository.dart';
-import 'package:hiddify/features/proxy/model/ip_info_entity.dart' as oldipinfo;
-import 'package:hiddify/features/proxy/model/proxy_failure.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
+import 'package:nerpa_vpn/core/haptic/haptic_service.dart';
+import 'package:nerpa_vpn/core/model/constants.dart';
+import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/core/utils/throttler.dart';
+import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
+import 'package:nerpa_vpn/features/proxy/data/proxy_data_providers.dart';
+import 'package:nerpa_vpn/features/proxy/data/proxy_repository.dart';
+import 'package:nerpa_vpn/features/proxy/model/ip_info_entity.dart' as oldipinfo;
+import 'package:nerpa_vpn/features/proxy/model/proxy_failure.dart';
+import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:nerpa_vpn/hiddifycore/init_signal.dart';
 
-import 'package:hiddify/utils/riverpod_utils.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/utils/riverpod_utils.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 

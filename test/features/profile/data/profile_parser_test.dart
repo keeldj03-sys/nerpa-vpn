@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hiddify/core/db/db.dart';
-import 'package:hiddify/features/profile/data/profile_data_mapper.dart';
-import 'package:hiddify/features/profile/data/profile_parser.dart';
-import 'package:hiddify/features/profile/model/profile_entity.dart';
-import 'package:hiddify/features/profile/model/profile_failure.dart';
+import 'package:nerpa_vpn/core/db/db.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_data_mapper.dart';
+import 'package:nerpa_vpn/features/profile/data/profile_parser.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
+import 'package:nerpa_vpn/features/profile/model/profile_failure.dart';
 import 'package:uuid/uuid.dart';
 
 /// Runs the real download → populate → parse flow for a remote profile from a

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:hiddify/gen/fonts.gen.dart';
-import 'package:hiddify/gen/translations.g.dart';
+import 'package:nerpa_vpn/gen/fonts.gen.dart';
+import 'package:nerpa_vpn/gen/translations.g.dart';
 
 extension AppLocaleX on AppLocale {
   String get preferredFontFamily =>

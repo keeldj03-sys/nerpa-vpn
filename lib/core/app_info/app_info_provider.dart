@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:hiddify/core/model/app_info_entity.dart';
-import 'package:hiddify/core/model/environment.dart';
+import 'package:nerpa_vpn/core/model/app_info_entity.dart';
+import 'package:nerpa_vpn/core/model/environment.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

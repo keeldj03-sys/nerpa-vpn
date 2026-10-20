@@ -77,3 +77,14 @@ windows/sign.cer
 /cert.pem
 /key.pem
 /sign.pfx
+
+# Локальные рабочие артефакты Nerpa VPN
+/tool/
+*.bak
+windows/installer/
+assets/images/fone.png
+analyze_home.txt
+build_windows*.txt
+targeted_analyze_result.txt
+
+tool_check_json.dart

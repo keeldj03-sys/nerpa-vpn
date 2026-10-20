@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/features/connection/model/startup_connection.dart';
+import 'package:nerpa_vpn/features/connection/model/startup_connection.dart';
 
 void main() {
   group("shouldRestoreConnectionOnStartup", () {

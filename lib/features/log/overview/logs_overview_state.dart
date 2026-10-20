@@ -1,4 +1,4 @@
-import 'package:hiddify/core/logger/ring/log_ring.dart';
+import 'package:nerpa_vpn/core/logger/ring/log_ring.dart';
 import 'package:logging/logging.dart';
 
 /// What the logs page is showing, and what it is filtered by.

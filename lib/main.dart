@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_driver/driver_extension.dart';
-import 'package:hiddify/bootstrap.dart';
-import 'package:hiddify/core/model/environment.dart';
+import 'package:nerpa_vpn/bootstrap.dart';
+import 'package:nerpa_vpn/core/model/environment.dart';
 
 Future<void> main() async {
   // Debug builds that ask for it: lets an external client tap, type and scroll

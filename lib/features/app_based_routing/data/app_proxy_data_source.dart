@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
-import 'package:hiddify/core/db/db.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_backup.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:nerpa_vpn/core/db/db.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_backup.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:nerpa_vpn/features/app_based_routing/model/pkg_flag.dart';
+import 'package:nerpa_vpn/utils/custom_loggers.dart';
 
 part 'app_proxy_data_source.g.dart';
 

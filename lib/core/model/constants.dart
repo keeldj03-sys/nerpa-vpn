@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hiddify/utils/utils.dart';
+import 'package:nerpa_vpn/utils/utils.dart';
 
 abstract class Constants {
-  static const appName = "Hiddify";
-  static const githubUrl = "https://github.com/hiddify/hiddify-next";
-  static const licenseUrl = "https://github.com/hiddify/hiddify-next?tab=License-1-ov-file#readme";
-  static const githubReleasesApiUrl = "https://api.github.com/repos/hiddify/hiddify-next/releases";
-  static const githubLatestReleaseUrl = "https://github.com/hiddify/hiddify-app/releases/latest";
-  static const appCastUrl = "https://raw.githubusercontent.com/hiddify/hiddify-next/main/appcast.xml";
-  static const telegramChannelUrl = "https://t.me/hiddify";
-  static const privacyPolicyUrl = "https://hiddify.com/privacy-policy/";
-  static const termsAndConditionsUrl = "https://hiddify.com/terms/";
+  static const appName = "Nerpa VPN";
+  static const githubUrl = "https://github.com/nerpa-vpn/nerpa-vpn-app";
+  static const licenseUrl = "https://github.com/nerpa-vpn/nerpa-vpn-app?tab=readme-ov-file#license";
+  static const githubReleasesApiUrl = "https://api.github.com/repos/nerpa-vpn/nerpa-vpn-app/releases";
+  static const githubLatestReleaseUrl = "https://github.com/nerpa-vpn/nerpa-vpn-app/releases/latest";
+  static const appCastUrl = "https://raw.githubusercontent.com/nerpa-vpn/nerpa-vpn-app/main/appcast.xml";
+  static const telegramChannelUrl = "https://t.me/nerpa_vpn";
+  static const privacyPolicyUrl = "https://nerpa-vpn.app/privacy/";
+  static const termsAndConditionsUrl = "https://nerpa-vpn.app/terms/";
   static const cfWarpPrivacyPolicy = "https://www.cloudflare.com/application/privacypolicy/";
   static const cfWarpTermsOfService = "https://www.cloudflare.com/application/terms/";
 }
@@ -20,6 +20,7 @@ const kAnimationDuration = Duration(milliseconds: 250);
 
 abstract class AddProfileModalConst {
   static const fixBtnsGap = 16.0;
+  static const fixBtnsGapDesktop = 10.0;
   static const fixBtnsGapCount = 5;
   static const fixBtnsGapCountDesktop = 4;
   static const fixBtnsItemCount = 4;
@@ -38,7 +39,7 @@ abstract class AlertDialogConst {
 }
 
 abstract class BottomSheetConst {
-  static const maxWidth = 456.0;
+  static const maxWidth = 560.0;
   static const boxConstraints = BoxConstraints(maxWidth: maxWidth);
   static const borderRadius = BorderRadius.vertical(top: Radius.circular(32));
 }

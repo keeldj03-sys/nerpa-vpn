@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiddify/utils/text_utils.dart';
+import 'package:nerpa_vpn/utils/text_utils.dart';
 
 /// Builds a zip in memory. A name ending in `/` becomes a folder.
 Uint8List zipOf(Map<String, String> files) {

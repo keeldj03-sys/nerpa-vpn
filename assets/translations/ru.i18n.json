@@ -1,6 +1,6 @@
 {
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Nerpa VPN",
     "start": "Начать",
     "version": "Версия",
     "ok": "OK",
@@ -114,7 +114,9 @@
       "sort": "Сортировать прокси",
       "testDelay": "Проверить задержку",
       "empty": "Нет доступных прокси",
+      "searchHint": "Поиск серверов, стран или провайдеров...",
       "activeProxy": "Активный прокси",
+      "changeFailed": "Не удалось переключить сервер",
       "unknownIp": "Неизвестный IP",
       "switchFailed": "Не удалось переключиться на этот прокси. Попробуйте ещё раз.",
       "sortOptions": {
@@ -220,6 +222,12 @@
     },
     "settings": {
       "title": "Настройки",
+      "hardReset": {
+        "title": "Полный сброс",
+        "message": "Сбросить ядро, очистить кэш и перезапустить сервис. Профили и настройки сохранятся.",
+        "success": "Сброс выполнен",
+        "failure": "Сброс не удался"
+      },
       "resetTunnel": "Сбросить профиль VPN",
       "options": {
         "import": {
@@ -264,6 +272,18 @@
       },
       "routing": {
         "title": "Маршрутизация",
+        "presets": {
+          "title": "Пресеты",
+          "loadError": "Не удалось загрузить пресеты",
+          "empty": "Нет доступных пресетов",
+          "rulesCount(plural, param=count)": {
+            "one": "$count правило",
+            "few": "$count правила",
+            "many": "$count правил",
+            "other": "$count правил"
+          },
+          "applied": "Пресет \"${name}\" применён"
+        },
         "routeRule": {
           "add": "Добавить правило",
           "delete": "Удалить правило",
@@ -632,6 +652,9 @@
         "many": "Осталось $days дней"
       },
       "remainingUnlimited": "Безлимитно",
+      "remainingTime": "Оставшееся время",
+      "remainingUsage": "Оставшийся трафик",
+      "profileSite": "Сайт подписки",
       "remainingTrafficSemanticLabel": "израсходовано ${consumed} из ${total} трафика",
       "remainingTraffic": "Оставшийся трафик",
       "openWebPage": "Открыть веб-страницу",
