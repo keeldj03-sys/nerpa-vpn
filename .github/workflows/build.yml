@@ -115,8 +115,10 @@ jobs:
       - name: Build core
         working-directory: hiddify-core
         env:
-          GOOS: ${{ matrix.target == 'windows-amd64' && 'windows' || 'linux' }}
-          GOARCH: ${{ matrix.arch }}
+          # The core Makefile sets GOOS and GOARCH for the target itself.
+          # They must not be set here: "go install" would then build the
+          # tools (gomobile, gobind) for the target architecture, and they
+          # could not run on the build machine.
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
         run: |
