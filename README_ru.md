@@ -117,6 +117,25 @@
 
 </div>
 
+## 🛠️ Сборка из исходников
+
+Ядро (sing-box) лежит в этом же репозитории как git-submodule, поэтому одной команды достаточно — все вложенные репозитории подтянутся автоматически:
+
+```bash
+git clone --recurse-submodules https://github.com/keeldj03-sys/nerpa-vpn.git
+cd nerpa-vpn
+flutter pub get
+flutter build windows --release
+```
+
+Если репозиторий уже скачан без субмодулей, добрать их можно отдельно:
+
+```bash
+git submodule update --init --recursive
+```
+
+Сборка ядра требует Go и CMake; ядро собирается из исходников, поэтому после изменения `hiddify-core` нужно пересобрать и его.
+
 ## 🌎 Переводы
 
 Улучшайте существующие языки или добавляйте новые, вручную редактируя JSON-файлы, расположенные в `/assets/translations`, или используя [Онлайн редактор Inlang](https://fink.inlang.com/editor/github.com/hiddify/hiddify-app)

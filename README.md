@@ -129,6 +129,27 @@ Vless, Vmess, Reality, TUIC, Hysteria, Wireguard, SSH etc.
 
 </div>
 
+## 🛠️ Building from source
+
+The core (sing-box) lives in this same repository as a git submodule, so a single command
+is enough — every nested repository is pulled in automatically:
+
+```bash
+git clone --recurse-submodules https://github.com/keeldj03-sys/nerpa-vpn.git
+cd nerpa-vpn
+flutter pub get
+flutter build windows --release
+```
+
+If the repository was already cloned without the submodules, fetch them separately:
+
+```bash
+git submodule update --init --recursive
+```
+
+Building the core needs Go and CMake; the core is compiled from source, so a change in
+`hiddify-core` needs a rebuild of its own.
+
 ## 🌎 Translations
 
     
