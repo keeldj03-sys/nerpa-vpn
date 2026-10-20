@@ -261,14 +261,24 @@ jobs:
           fetch-depth: 0
 
       - name: Import Apple Codesign Certificates
-        if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') && secrets.APPLE_CERTIFICATE_P12 != '' }}
-        uses: apple-actions/import-codesign-certs@v6
-        with: 
-            p12-file-base64: "${{ secrets.APPLE_CERTIFICATE_P12 }}"
-            p12-password: "${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}"
+        if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
+        # Without a certificate the build still runs, it just produces an
+        # unsigned artifact. The condition cannot ask for the secret
+        # directly: a called workflow may only use "inputs" in an "if".
+        env:
+          HAS_CERT: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
+        run: |
+          if [ -z "$HAS_CERT" ]; then
+            echo "no Apple certificate, building unsigned"
+            exit 0
+          fi
+          echo "${{ secrets.APPLE_CERTIFICATE_P12 }}" | base64 --decode > /tmp/nerpa.p12
+          echo "new key" > /tmp/nerpa.p12.pass
+          security import /tmp/nerpa.p12 -k ~/Library/Keychains/login.keychain-db -P "$(cat /tmp/nerpa.p12.pass)" -T /usr/bin/codesign -A
+          rm -f /tmp/nerpa.p12 /tmp/nerpa.p12.pass
 
       - name: Import Apple Mobile Provisioning Profile
-        if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') && secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64 != '' }}
+        if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
         run: |
            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
            echo "${{secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64}}"|base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
@@ -362,8 +372,17 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Setup Android Signing Properties
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') && secrets.ANDROID_SIGNING_KEY != '' }}
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') }}
+        # Without a key the build still runs, it just produces an unsigned
+        # artifact. The condition cannot ask for the secret directly: a
+        # called workflow may only use "inputs" in an "if".
+        env:
+          HAS_KEY: ${{ secrets.ANDROID_SIGNING_KEY != '' }}
         run: |
+          if [ -z "$HAS_KEY" ]; then
+            echo "no Android signing key, building unsigned"
+            exit 0
+          fi
           echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > android/key.jks
           echo "storeFile=$(pwd)/android/key.jks" > android/key.properties
           echo "storePassword=${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}" >> android/key.properties
@@ -371,8 +390,17 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}" >> android/key.properties
 
       - name: Setup Windows Signing Properties
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') && secrets.WINDOWS_SIGNING_KEY != '' }}
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') }}
+        # Without a certificate the build still runs, it just produces an
+        # unsigned artifact. The condition cannot ask for the secret
+        # directly: a called workflow may only use "inputs" in an "if".
+        env:
+          HAS_CERT: ${{ secrets.WINDOWS_SIGNING_KEY != '' }}
         run: |
+            if (-not $env:HAS_CERT) {
+                Write-Host "no Windows signing certificate, building unsigned"
+                exit 0
+            }
             [IO.File]::WriteAllBytes("windows\sign.pfx", [Convert]::FromBase64String("${{ secrets.WINDOWS_SIGNING_KEY }}"))
             (Get-Content "windows\packaging\msix\make_config.yaml") -replace '^certificate_password:.*$', 'certificate_password: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}' | Set-Content "windows\packaging\msix\make_config.yaml"
             # Fail early with a readable reason instead of SignTool's "No certificates were found"
@@ -414,12 +442,17 @@ jobs:
           make ${{ matrix.platform }}-release
 
       - name: Code Sign
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') && secrets.WINDOWS_SIGNING_KEY != '' }}
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') }}
         # signtool-code-sign actions hardcode an SDK path (10.0.17763.0) missing on current runners,
         # so locate signtool from whichever Windows SDK is installed.
         env:
           SIGN_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+          HAS_CERT: ${{ secrets.WINDOWS_SIGNING_KEY != '' }}
         run: |
+          if (-not $env:HAS_CERT) {
+            Write-Host "no Windows signing certificate, skipping the signing"
+            exit 0
+          }
           $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
             Sort-Object { [version]$_.Directory.Parent.Name } -Descending | Select-Object -First 1
           if (-not $signtool) { throw "signtool.exe not found" }

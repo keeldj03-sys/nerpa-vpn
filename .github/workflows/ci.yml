@@ -12,12 +12,15 @@ on:
        - main
        - dev
        - android-fix-action-bug
-       - new-design-v2 
+       - new-design-v2
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.vscode/'
       - 'appcast.xml'
+  # Lets the pipeline be started by hand, for example when the signing
+  # secrets have been added.
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
