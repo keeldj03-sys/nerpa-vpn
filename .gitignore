@@ -94,3 +94,5 @@ tool_add_change_node_key.dart
 tool_check_yaml.dart
 
 tool_build_core_check.dart
+
+tool_check_dll.dart
