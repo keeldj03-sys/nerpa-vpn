@@ -556,10 +556,15 @@ build-headers:
 	make -C hiddify-core -f Makefile headers && mv $(BINDIR)/$(CORE_NAME)-headers.h $(BINDIR)/hiddify-core.h
 
 build-android-libs:
-	@if [ -f "$(BINDIR)/$(LIB_NAME).aar" ]; then \
-		echo "core aar already built, skipping"; \
+	@if [ -f "$(ANDROID_OUT)/$(LIB_NAME).aar" ]; then \
+		echo "core aar already in place, skipping"; \
+	elif [ -f "$(BINDIR)/$(LIB_NAME).aar" ]; then \
+		echo "moving the prebuilt core aar into place"; \
+		mkdir -p $(ANDROID_OUT); \
+		mv $(BINDIR)/$(LIB_NAME).aar $(ANDROID_OUT)/; \
 	else \
 		make -C hiddify-core -f Makefile android; \
+		mkdir -p $(ANDROID_OUT); \
 		mv $(BINDIR)/$(LIB_NAME).aar $(ANDROID_OUT)/; \
 	fi
 

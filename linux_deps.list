@@ -22,6 +22,9 @@ locate
 # tray_manager https://pub.dev/packages/tray_manager
 libayatana-appindicator3-dev
 
+# media_kit_video https://pub.dev/packages/media_kit_video
+libmpv-dev
+
 # for running .appimage
 fuse
 
