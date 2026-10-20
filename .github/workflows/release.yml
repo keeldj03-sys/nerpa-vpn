@@ -18,3 +18,8 @@ jobs:
       upload-artifact: true
       tag-name: "${{ github.ref_name }}"
       channel: "${{ github.ref_type == 'tag' && endsWith(github.ref_name, 'dev') && 'dev' || github.ref_type != 'tag' && 'dev' || 'prod' }}"
+      # The build workflow cannot ask for a secret in an "if", so it gets
+      # told whether the signing secrets are there.
+      sign-apple: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
+      sign-android: ${{ secrets.ANDROID_SIGNING_KEY != '' }}
+      sign-windows: ${{ secrets.WINDOWS_SIGNING_KEY != '' }}
