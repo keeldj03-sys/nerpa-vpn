@@ -74,6 +74,7 @@ jobs:
 
       - name: Setup Java
         if: matrix.target == 'android'
+        id: setup-java
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
@@ -92,16 +93,46 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Cache Go modules
+        if: startsWith(matrix.target, 'linux')
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: go-${{ matrix.target }}-${{ hashFiles('hiddify-core/go.sum') }}
+          restore-keys: |
+            go-${{ matrix.target }}-
+
+      - name: Cache Chromium toolchain
+        if: startsWith(matrix.target, 'linux')
+        id: cache-chromium-toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./cronet-go/naiveproxy/src/third_party/llvm-build/Release+Asserts
+            ./cronet-go/naiveproxy/src/out/sysroot-build
+          key: chromium-toolchain-${{ matrix.target }}-${{ matrix.arch }}-${{ hashFiles('hiddify-core/hiddify-sing-box/.github/CRONET_GO_VERSION') }}
+
       - name: Build core
         working-directory: hiddify-core
         env:
           GOOS: ${{ matrix.target == 'windows-amd64' && 'windows' || 'linux' }}
           GOARCH: ${{ matrix.arch }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
         run: |
           # gomobile and gobind are installed by the core Makefile into
           # $(go env GOPATH)/bin, which is not on the PATH by default.
+          # The Makefile installs them and calls gomobile in the same
+          # recipe, so the PATH has to be set before make runs.
+          export PATH="$(go env GOPATH)/bin:$PATH"
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+          # The linux build links against the cronet library, which has to
+          # be built first. It downloads a Chromium toolchain, so it takes
+          # a while.
+          if [ "${{ matrix.target }}" = "linux-amd64" ]; then
+            make cronet-amd64
+          fi
 
           # The module proxy drops connections from time to time. Retry the
           # download so a flaky network does not fail the whole build.

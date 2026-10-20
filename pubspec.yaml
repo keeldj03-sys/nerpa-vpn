@@ -159,7 +159,6 @@ flutter:
     - assets/images/tray_icon_disconnected.png
     - assets/images/connect_norouz.PNG
     - assets/images/disconnect_norouz.PNG
-    - assets/images/fone.png
     - assets/images/world_map.png
     - assets/images/source/ic_launcher_border.png
     - assets/videos/nerpa.mp4
