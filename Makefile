@@ -336,6 +336,10 @@ windows-exe-release:
 	  --build-dart-define=sentry_dsn=$(SENTRY_DSN)
 
 windows-msix-release:
+	@if [ ! -f "windows/sign.pfx" ]; then \
+		echo "no windows signing certificate, skipping the msix package"; \
+		exit 0; \
+	fi; \
 	fastforge package \
 	  --platform windows \
 	  --targets msix \
