@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nerpa_vpn/core/localization/translations.dart';
 import 'package:nerpa_vpn/core/model/region.dart';
 import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
+import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:nerpa_vpn/core/widget/shimmer_skeleton.dart';
 import 'package:nerpa_vpn/features/app_based_routing/data/auto_selection_repository.dart';
 import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
@@ -45,6 +46,13 @@ class RoutingOptionsPage extends HookConsumerWidget {
         title: Text(t.pages.settings.routing.title),
         actions: [
           const _RegionChip(),
+          // Presets apply a whole bundle of rules at once, which is the
+          // fast path when the list has to be set up from scratch.
+          IconButton(
+            icon: const Icon(Icons.auto_awesome_rounded),
+            tooltip: t.pages.settings.routing.presets.title,
+            onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showPresets(),
+          ),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert_rounded),
             itemBuilder: (_) {

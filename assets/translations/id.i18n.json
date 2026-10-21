@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "Akses cepat ke mode layanan, LAN, dan rantai",
       "lanSharingSubtitle": "Akses ke proxy lokal dan bagikan tautan",
       "chainTitle": "Rantai koneksi",
-      "chainSubtitle": "Urutan penyaringan, profil, dan keamanan tambahan"
+      "chainSubtitle": "Urutan penyaringan, profil, dan keamanan tambahan",
+      "rulesLabel": "Aturan"
     },
     "proxies": {
       "title": "Proxy",

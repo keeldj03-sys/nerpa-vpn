@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "Acceso rápido al modo de servicio, LAN y la cadena",
       "lanSharingSubtitle": "Acceso al proxy local y compartir el enlace",
       "chainTitle": "Cadena de conexión",
-      "chainSubtitle": "Orden del filtrado, el perfil y la seguridad adicional"
+      "chainSubtitle": "Orden del filtrado, el perfil y la seguridad adicional",
+      "rulesLabel": "Reglas"
     },
     "proxies": {
       "title": "Proxies",

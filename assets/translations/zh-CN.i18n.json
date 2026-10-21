@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "快速访问服务模式、局域网和链路",
       "lanSharingSubtitle": "访问本地代理并分享链接",
       "chainTitle": "连接链路",
-      "chainSubtitle": "过滤、配置文件和额外安全的顺序"
+      "chainSubtitle": "过滤、配置文件和额外安全的顺序",
+      "rulesLabel": "规则"
     },
     "proxies": {
       "title": "代理",

@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "دسترسی سریع به حالت سرویس، LAN و زنجیره",
       "lanSharingSubtitle": "دسترسی به پروکسی محلی و اشتراک‌گذاری پیوند",
       "chainTitle": "زنجیره اتصال",
-      "chainSubtitle": "ترتیب فیلترینگ، پروفایل و امنیت اضافی"
+      "chainSubtitle": "ترتیب فیلترینگ، پروفایل و امنیت اضافی",
+      "rulesLabel": "قوانین"
     },
     "proxies": {
       "title": "پروکسی‌ها",

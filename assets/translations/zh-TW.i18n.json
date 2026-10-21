@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "快速存取服務模式、區域網與鏈結",
       "lanSharingSubtitle": "存取本機代理並分享連結",
       "chainTitle": "連線鏈結",
-      "chainSubtitle": "過濾、設定檔與額外安全的順序"
+      "chainSubtitle": "過濾、設定檔與額外安全的順序",
+      "rulesLabel": "規則"
     },
     "proxies": {
       "title": "代理",

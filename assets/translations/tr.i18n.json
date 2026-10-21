@@ -121,7 +121,8 @@
       "quickSettingsSubtitle": "Servis moduna, LAN ve zincire hızlı erişim",
       "lanSharingSubtitle": "Yerel vekil sunucusuna erişim ve bağlantı paylaşımı",
       "chainTitle": "Bağlantı zinciri",
-      "chainSubtitle": "Filtreleme, profil ve ek güvenlik sırası"
+      "chainSubtitle": "Filtreleme, profil ve ek güvenlik sırası",
+      "rulesLabel": "Kurallar"
     },
     "proxies": {
       "title": "Proxy'ler",

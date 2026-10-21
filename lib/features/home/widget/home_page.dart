@@ -169,6 +169,8 @@ class HomePage extends HookConsumerWidget {
                   children: [
                     Expanded(child: _QuickSettingsBar(t: t, ref: ref)),
                     const Gap(10),
+                    _PresetsButton(t: t, ref: ref),
+                    const Gap(10),
                     _LogsButton(t: t),
                   ],
                 ),
@@ -460,6 +462,52 @@ class _QuickSettingsBar extends StatelessWidget {
   }
 }
 
+/// Кнопка быстрого доступа к пресетам маршрутизации: готовые наборы
+/// правил, которые применяются одним тапом.
+class _PresetsButton extends StatelessWidget {
+  const _PresetsButton({required this.t, required this.ref});
+
+  final Translations t;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: t.pages.settings.routing.presets.title,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(26),
+          onTap: () => ref.read(bottomSheetsNotifierProvider.notifier).showPresets(),
+          child: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF16292F),
+                  Color(0xFF0A1316),
+                ],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 12)),
+              ],
+            ),
+            child: const Center(
+              child: Icon(Icons.auto_awesome_rounded, size: 21, color: AppTheme.nerpaAccent),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Кнопка быстрого доступа к логам. На мобильном в сайдбаре логов нет,
 /// поэтому на главной нужна своя точка входа.
 class _LogsButton extends StatelessWidget {
@@ -634,6 +682,14 @@ class _TopProfileBar extends HookConsumerWidget {
                         label: modeLabel,
                         onTap: () => context.goNamed('chainOptions'),
                       ),
+                    // Routing rules: the page lives under the settings, and
+                    // entering a rule by hand is the most common thing to do
+                    // right after importing a subscription.
+                    _TopBarMetaChip(
+                      icon: Icons.route_rounded,
+                      label: t.pages.home.rulesLabel,
+                      onTap: () => context.goNamed('routingOptions'),
+                    ),
                   ],
                 ),
               ],

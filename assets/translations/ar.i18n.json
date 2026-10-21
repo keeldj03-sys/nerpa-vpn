@@ -127,7 +127,8 @@
       "quickSettingsSubtitle": "وصول سريع إلى وضع الخدمة و LAN والسلسلة",
       "lanSharingSubtitle": "الوصول إلى الوكيل المحلي ومشاركة الرابط",
       "chainTitle": "سلسلة الاتصال",
-      "chainSubtitle": "ترتيب التصفية والملف والحماية الإضافية"
+      "chainSubtitle": "ترتيب التصفية والملف والحماية الإضافية",
+      "rulesLabel": "القواعد"
     },
     "proxies": {
       "title": "البروكسيات",

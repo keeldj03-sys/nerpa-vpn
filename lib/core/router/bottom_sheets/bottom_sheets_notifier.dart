@@ -9,6 +9,7 @@ import 'package:nerpa_vpn/features/app_based_routing/overview/app_list_share_mod
 import 'package:nerpa_vpn/features/log/overview/logs_modals.dart';
 import 'package:nerpa_vpn/features/profile/add/add_profile_modal.dart';
 import 'package:nerpa_vpn/features/profile/overview/profiles_modal.dart';
+import 'package:nerpa_vpn/features/presets/widget/presets_modal.dart';
 import 'package:nerpa_vpn/utils/link_parsers.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -75,6 +76,9 @@ class BottomSheetsNotifier extends _$BottomSheetsNotifier {
   Future<void> showProfilesOverview() async => await _show(isScrollControlled: true, child: const ProfilesModal());
 
   Future<void> showQuickSettings() async => await _show(isScrollControlled: false, child: const QuickSettingsModal());
+
+  /// Routing presets: ready-made bundles of routing rules.
+  Future<void> showPresets() async => await _show(isScrollControlled: true, child: const PresetsModal());
 
   Future<void> showLogsShare() async => await _show(isScrollControlled: false, child: const LogsShareModal());
 
