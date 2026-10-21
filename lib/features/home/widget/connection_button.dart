@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:nerpa_vpn/core/localization/translations.dart';
 import 'package:nerpa_vpn/core/model/constants.dart';
 import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:nerpa_vpn/core/router/dialog/dialog_notifier.dart';
-import 'package:nerpa_vpn/core/theme/theme_extensions.dart';
-import 'package:nerpa_vpn/core/widget/animated_text.dart';
+import 'package:nerpa_vpn/core/theme/app_theme.dart';
 import 'package:nerpa_vpn/features/connection/model/connection_status.dart';
 import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
 import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
 import 'package:nerpa_vpn/features/proxy/active/active_proxy_notifier.dart';
-import 'package:nerpa_vpn/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// What the button shows, one value per look.
@@ -63,9 +60,7 @@ class ConnectionButton extends HookConsumerWidget {
       _ => null,
     };
 
-    const buttonTheme = ConnectionButtonTheme.light;
-    final today = DateTime.now();
-    return _ConnectionButton(
+    return _NerpaPowerButton(
       look: look,
       onTap: onTap,
       label: switch (look) {
@@ -78,17 +73,6 @@ class ConnectionButton extends HookConsumerWidget {
         _Look.failed => t.connection.failed,
       },
       hint: look == _Look.failed ? t.connection.tapToRetry : null,
-      buttonColor: switch (look) {
-        _Look.connected => buttonTheme.connectedColor!,
-        _Look.noPing || _Look.hotReloading => const Color.fromARGB(255, 185, 176, 103),
-        _Look.failed => Colors.red,
-        _ => buttonTheme.idleColor!,
-      },
-      image: switch (look) {
-        _Look.connected || _Look.noPing || _Look.hotReloading => Assets.images.connectNorouz,
-        _ => Assets.images.disconnectNorouz,
-      },
-      useImage: today.day >= 19 && today.day <= 23 && today.month == 3,
     );
   }
 
@@ -106,150 +90,349 @@ class ConnectionButton extends HookConsumerWidget {
   }
 }
 
-class _ConnectionButton extends HookWidget {
-  const _ConnectionButton({
-    required this.look,
-    required this.onTap,
-    required this.label,
-    required this.hint,
-    required this.buttonColor,
-    required this.image,
-    required this.useImage,
-  });
+/// Nerpa VPN — the power button.
+///
+/// A dark circle that glows cyan while the tunnel is up and throws a ripple
+/// while it is connecting. The look is a state, so the button reports the
+/// same states the core does.
+class _NerpaPowerButton extends StatefulWidget {
+  const _NerpaPowerButton({required this.look, required this.onTap, required this.label, this.hint});
 
   final _Look look;
   final VoidCallback? onTap;
   final String label;
   final String? hint;
-  final Color buttonColor;
-  final AssetGenImage image;
-  final bool useImage;
+
+  @override
+  State<_NerpaPowerButton> createState() => _NerpaPowerButtonState();
+}
+
+class _NerpaPowerButtonState extends State<_NerpaPowerButton> with TickerProviderStateMixin {
+  late final AnimationController _glowController;
+  late final AnimationController _rippleController;
+
+  bool get _isConnected => widget.look == _Look.connected || widget.look == _Look.noPing;
+  bool get _isBusy => widget.look == _Look.connecting || widget.look == _Look.disconnecting;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))
+      ..repeat(reverse: true);
+    _rippleController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
+  }
+
+  @override
+  void didUpdateWidget(_NerpaPowerButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final wasBusy = oldWidget.look == _Look.connecting || oldWidget.look == _Look.disconnecting;
+    if (_isBusy && !wasBusy) {
+      _rippleController.repeat();
+    } else if (!_isBusy && wasBusy) {
+      _rippleController.stop();
+      _rippleController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    _rippleController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final busy = look == _Look.connecting || look == _Look.disconnecting;
+    const cyan = AppTheme.nerpaAccent;
+    const zinc800 = Color(0xFF27272A);
 
-    // One ripple when a wait the user watched ends connected, not when the
-    // app opens on a tunnel that is already up or a timed-out ping recovers.
-    final ripple = useAnimationController(duration: const Duration(milliseconds: 900));
-    final previousLook = usePrevious(look);
-    useEffect(() {
-      if (look == _Look.connected && previousLook == _Look.connecting) ripple.forward(from: 0);
-      return null;
-    }, [look]);
+    final connected = _isConnected;
+    final failed = widget.look == _Look.failed;
+
+    final buttonColor = failed
+        ? Colors.red.withValues(alpha: 0.40)
+        : connected
+            ? cyan.withValues(alpha: 0.40)
+            : zinc800.withValues(alpha: 0.46);
+    final iconColor = Colors.white.withValues(alpha: connected ? 1 : 0.98);
+    final borderColor = failed
+        ? Colors.red.withValues(alpha: 0.90)
+        : connected
+            ? cyan.withValues(alpha: 0.94)
+            : Colors.white.withValues(alpha: 0.28);
+    final innerRingColor = connected ? cyan.withValues(alpha: 0.34) : Colors.white.withValues(alpha: 0.20);
+    final innerCoreColor = connected ? cyan.withValues(alpha: 0.30) : Colors.white.withValues(alpha: 0.14);
+    final highlightColor = connected ? cyan.withValues(alpha: 0.28) : Colors.white.withValues(alpha: 0.22);
+    final shadowColor = connected ? cyan.withValues(alpha: 0.22) : Colors.black.withValues(alpha: 0.30);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Semantics(
-          button: true,
-          enabled: onTap != null,
-          label: label,
-          hint: hint,
-          child: SizedBox.square(
-            dimension: 148,
-            child: Stack(
-              fit: StackFit.expand,
-              clipBehavior: Clip.none,
-              children: [
+        // ── Ripple + Button Stack ──
+        SizedBox(
+          width: 240,
+          height: 240,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Ambient background glow (when connected)
+              if (connected)
                 AnimatedBuilder(
-                  animation: ripple,
-                  builder: (context, _) => ripple.isAnimating
-                      ? Transform.scale(
-                          scale: 1 + .4 * ripple.value,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: buttonColor.withValues(alpha: .7 * (1 - ripple.value)),
-                                width: 3,
+                  animation: _glowController,
+                  builder: (_, _) => Container(
+                    width: 220 + 24 * _glowController.value,
+                    height: 220 + 24 * _glowController.value,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: cyan.withValues(alpha: 0.14 + 0.06 * _glowController.value),
+                          blurRadius: 64 + 18 * _glowController.value,
+                          spreadRadius: -8,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Ripple ring 1
+              AnimatedBuilder(
+                animation: _rippleController,
+                builder: (_, _) {
+                  final v = _rippleController.value;
+                  if (v == 0.0) return const SizedBox.shrink();
+                  return Opacity(
+                    opacity: (1 - v).clamp(0.0, 1.0),
+                    child: Transform.scale(
+                      scale: 1.0 + 0.4 * v,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: cyan.withValues(alpha: 0.7), width: 1.5),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // Ripple ring 2 (offset by 0.5)
+              AnimatedBuilder(
+                animation: _rippleController,
+                builder: (_, _) {
+                  final v = (_rippleController.value + 0.5) % 1.0;
+                  if (v == 0.0) return const SizedBox.shrink();
+                  return Opacity(
+                    opacity: (1 - v).clamp(0.0, 1.0),
+                    child: Transform.scale(
+                      scale: 1.0 + 0.4 * v,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: cyan.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // Main button
+              Semantics(
+                button: true,
+                enabled: widget.onTap != null,
+                label: widget.label,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOut,
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: buttonColor,
+                    border: Border.all(color: borderColor, width: 1.6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: shadowColor,
+                        blurRadius: connected ? 46 : 30,
+                        spreadRadius: connected ? -10 : -5,
+                        offset: const Offset(0, 12),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: connected ? 0.10 : 0.18),
+                        blurRadius: 28,
+                        spreadRadius: -14,
+                        offset: const Offset(0, 14),
+                      ),
+                      if (connected) ...[
+                        BoxShadow(color: cyan.withValues(alpha: 0.30), blurRadius: 58, spreadRadius: -14),
+                        BoxShadow(color: cyan.withValues(alpha: 0.16), blurRadius: 104, spreadRadius: -30),
+                      ],
+                    ],
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        highlightColor,
+                        buttonColor,
+                        buttonColor.withValues(alpha: connected ? 0.30 : 0.28),
+                      ],
+                      stops: const [0.0, 0.40, 1.0],
+                    ),
+                  ),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: innerRingColor, width: 1.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: connected ? 0.14 : 0.09),
+                          blurRadius: 18,
+                          spreadRadius: -8,
+                          offset: const Offset(0, -2),
+                        ),
+                        BoxShadow(
+                          color: cyan.withValues(alpha: connected ? 0.22 : 0.11),
+                          blurRadius: 26,
+                          spreadRadius: -16,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      key: const ValueKey('home_connection_button'),
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: widget.onTap,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Align(
+                              alignment: const Alignment(-0.25, -0.28),
+                              child: Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.white.withValues(alpha: connected ? 0.28 : 0.20),
+                                      Colors.white.withValues(alpha: 0),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                Positioned.fill(
-                  left: -10,
-                  top: -10,
-                  right: -10,
-                  bottom: -10,
-                  // A single faded child: an AnimatedSwitcher here hit duplicate keys
-                  // when the state flipped twice within its duration.
-                  child: AnimatedOpacity(
-                    opacity: busy ? 1 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    // Stops the spinner's ticker while hidden.
-                    child: TickerMode(
-                      enabled: busy,
-                      child: Transform.flip(
-                        // Disconnecting spins the other way.
-                        flipX: look == _Look.disconnecting,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 4,
-                          strokeCap: StrokeCap.round,
-                          color: buttonColor,
-                          backgroundColor: buttonColor.withValues(alpha: .2),
+                            Center(
+                              child: Container(
+                                width: 124,
+                                height: 124,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      innerCoreColor,
+                                      Colors.white.withValues(alpha: connected ? 0.14 : 0.09),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.0, 0.58, 1.0],
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: connected ? 0.20 : 0.14),
+                                    width: 0.9,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cyan.withValues(alpha: connected ? 0.30 : 0.12),
+                                      blurRadius: connected ? 34 : 22,
+                                      spreadRadius: -14,
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: _PowerIcon(connected: connected, failed: failed, color: iconColor),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
-                Material(
-                  key: const ValueKey("home_connection_button"),
-                  shape: const CircleBorder(),
-                  color: Colors.white,
-                  elevation: 3,
-                  shadowColor: Colors.black,
-                  surfaceTintColor: Colors.transparent,
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    focusColor: Colors.grey,
-                    onTap: onTap,
-                    child: Padding(
-                      padding: const EdgeInsets.all(36),
-                      child: AnimatedOpacity(
-                        opacity: look == _Look.loading ? .38 : 1,
-                        duration: const Duration(milliseconds: 300),
-                        child: TweenAnimationBuilder(
-                          tween: ColorTween(end: buttonColor),
-                          duration: const Duration(milliseconds: 250),
-                          builder: (context, value, child) {
-                            if (useImage) {
-                              return image.image();
-                            } else {
-                              return Assets.images.logo.svg(colorFilter: ColorFilter.mode(value!, BlendMode.srcIn));
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const Gap(24),
-        ExcludeSemantics(
-          child: Column(
-            children: [
-              AnimatedText(label, style: theme.textTheme.titleMedium),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: hint == null
-                    ? const SizedBox.shrink()
-                    : Text(
-                        hint!,
-                        key: ValueKey(hint),
-                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                      ),
               ),
             ],
           ),
         ),
+
+        const Gap(12),
+
+        // ── Status label ──
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            widget.label,
+            key: ValueKey(widget.label),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: failed
+                  ? Colors.red
+                  : connected
+                      ? AppTheme.nerpaAccent
+                      : AppTheme.nerpaTextSecondary,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        if (widget.hint != null) ...[
+          const Gap(4),
+          Text(
+            widget.hint!,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+/// The power glyph. It turns into a spinner while the core is busy, so the
+/// button always shows what the core is doing.
+class _PowerIcon extends StatelessWidget {
+  const _PowerIcon({required this.connected, required this.failed, required this.color});
+
+  final bool connected;
+  final bool failed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Icon(
+        failed ? Icons.error_outline_rounded : Icons.power_settings_new_rounded,
+        key: ValueKey('$connected-$failed'),
+        size: 68,
+        color: color,
+        shadows: [
+          Shadow(
+            color: Colors.black.withValues(alpha: connected ? 0.24 : 0.30),
+            blurRadius: 20,
+          ),
+          Shadow(
+            color: AppTheme.nerpaAccent.withValues(alpha: connected ? 0.28 : 0.12),
+            blurRadius: 24,
+          ),
+        ],
+      ),
     );
   }
 }
