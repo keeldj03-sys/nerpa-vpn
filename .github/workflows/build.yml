@@ -668,23 +668,11 @@ jobs:
           tag_name: 'draft'
           body_path: './release.md'
           prerelease: true
-
-      - name: Create or Update Draft Release
-        uses: softprops/action-gh-release@v3
-        # env:
-          #GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#          GITHUB_REPOSITORY: hiddify/hiddify-app
-        with:
-          files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
-          target_commitish: ${{ github.sha }}
-          # target_commitish: '530bf77839a74d4f13847ba244a20734ac7ab119'
-          prerelease: true
-          # repository: hiddify/hiddify-app
+          # The release has to stay a draft. Without this flag the action
+          # publishes it, and a published release cannot be turned back into
+          # a draft by the workflow token, so the next run fails with
+          # "Resource not accessible by integration".
+          draft: true
 
   upload-release:
     permissions: write-all
