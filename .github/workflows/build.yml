@@ -168,7 +168,10 @@ jobs:
         with:
           name: core-${{ matrix.name }}
           path: hiddify-core/bin
-          retention-days: 1
+          # The built core is worth keeping for a while: it is the input of
+          # the app build, and having it around makes it possible to rebuild
+          # a single platform without rebuilding the core.
+          retention-days: 30
 
   test:
     outputs:
@@ -610,7 +613,10 @@ jobs:
         with:
           name: ${{matrix.platform}}
           path: ./out
-          retention-days: 1
+          # The released builds live in the draft release, but the artifacts
+          # are the only place the debug symbols and the intermediate
+          # packages are kept, so they are worth keeping for a month.
+          retention-days: 30
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() && startsWith(matrix.os,'macos')}}
