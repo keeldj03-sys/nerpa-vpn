@@ -10,6 +10,7 @@ import 'package:nerpa_vpn/core/model/region.dart';
 import 'package:nerpa_vpn/core/preferences/general_preferences.dart';
 import 'package:nerpa_vpn/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:nerpa_vpn/core/widget/shimmer_skeleton.dart';
+import 'package:nerpa_vpn/gen/assets.gen.dart';
 import 'package:nerpa_vpn/features/app_based_routing/data/auto_selection_repository.dart';
 import 'package:nerpa_vpn/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:nerpa_vpn/features/app_based_routing/model/pkg_flag.dart';
@@ -49,7 +50,11 @@ class RoutingOptionsPage extends HookConsumerWidget {
           // Presets apply a whole bundle of rules at once, which is the
           // fast path when the list has to be set up from scratch.
           IconButton(
-            icon: const Icon(Icons.auto_awesome_rounded),
+            icon: Assets.images.iconPresets.svg(
+              width: 20,
+              height: 20,
+              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
+            ),
             tooltip: t.pages.settings.routing.presets.title,
             onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showPresets(),
           ),

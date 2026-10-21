@@ -32,6 +32,7 @@ import 'package:nerpa_vpn/features/proxy/active/active_proxy_card.dart';
 import 'package:nerpa_vpn/features/proxy/active/active_proxy_delay_indicator.dart';
 import 'package:nerpa_vpn/features/proxy/active/active_proxy_notifier.dart';
 import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
+import 'package:nerpa_vpn/gen/assets.gen.dart';
 import 'package:nerpa_vpn/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 import 'package:nerpa_vpn/hiddifycore/hiddify_core_service_provider.dart';
 import 'package:nerpa_vpn/singbox/model/singbox_config_enum.dart';
@@ -417,7 +418,11 @@ class _QuickSettingsBar extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.055),
                           border: Border.all(color: AppTheme.nerpaAccent.withValues(alpha: 0.24)),
                         ),
-                        child: const Icon(Icons.tune_rounded, size: 20, color: AppTheme.nerpaAccent),
+                        child: Assets.images.iconQuickSettings.svg(
+                          width: 20,
+                          height: 20,
+                          colorFilter: const ColorFilter.mode(AppTheme.nerpaAccent, BlendMode.srcIn),
+                        ),
                       ),
                       const Gap(12),
                       Expanded(
@@ -498,8 +503,12 @@ class _PresetsButton extends StatelessWidget {
                 BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 12)),
               ],
             ),
-            child: const Center(
-              child: Icon(Icons.auto_awesome_rounded, size: 21, color: AppTheme.nerpaAccent),
+            child: Center(
+              child: Assets.images.iconPresets.svg(
+                width: 21,
+                height: 21,
+                colorFilter: const ColorFilter.mode(AppTheme.nerpaAccent, BlendMode.srcIn),
+              ),
             ),
           ),
         ),
@@ -543,8 +552,12 @@ class _LogsButton extends StatelessWidget {
                 BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 12)),
               ],
             ),
-            child: const Center(
-              child: Icon(Icons.receipt_long_rounded, size: 21, color: AppTheme.nerpaAccent),
+            child: Center(
+              child: Assets.images.iconLogs.svg(
+                width: 21,
+                height: 21,
+                colorFilter: const ColorFilter.mode(AppTheme.nerpaAccent, BlendMode.srcIn),
+              ),
             ),
           ),
         ),

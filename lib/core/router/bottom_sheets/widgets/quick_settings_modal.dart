@@ -6,6 +6,7 @@ import 'package:nerpa_vpn/core/theme/app_theme.dart';
 import 'package:nerpa_vpn/features/chain/overview/chain_quick_settings.dart';
 import 'package:nerpa_vpn/features/settings/data/config_option_repository.dart';
 import 'package:nerpa_vpn/features/settings/widget/lan_sharing_tile.dart';
+import 'package:nerpa_vpn/gen/assets.gen.dart';
 import 'package:nerpa_vpn/singbox/model/singbox_config_enum.dart';
 
 class QuickSettingsModal extends HookConsumerWidget {
@@ -57,7 +58,11 @@ class QuickSettingsModal extends HookConsumerWidget {
                                 color: Colors.white.withValues(alpha: 0.05),
                                 border: Border.all(color: AppTheme.nerpaAccent.withValues(alpha: 0.24)),
                               ),
-                              child: const Icon(Icons.tune_rounded, color: AppTheme.nerpaAccent),
+                              child: Assets.images.iconQuickSettings.svg(
+                                width: 20,
+                                height: 20,
+                                colorFilter: const ColorFilter.mode(AppTheme.nerpaAccent, BlendMode.srcIn),
+                              ),
                             ),
                             const Gap(12),
                             Expanded(
