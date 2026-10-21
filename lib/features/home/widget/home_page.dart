@@ -20,6 +20,7 @@ import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart'
 import 'package:nerpa_vpn/features/home/widget/connection_button.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_stats_row.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_timer.dart';
+import 'package:nerpa_vpn/features/home/widget/subscription_status_bar.dart';
 import 'package:nerpa_vpn/features/profile/data/selected_outbound_store.dart';
 import 'package:nerpa_vpn/features/profile/model/profile_entity.dart';
 import 'package:nerpa_vpn/features/profile/notifier/active_profile_notifier.dart';
@@ -106,6 +107,17 @@ class HomePage extends HookConsumerWidget {
                       switch (activeProfile) {
                         AsyncData(value: final profile?) => _ProfileHeader(profile: profile, ref: ref, t: t),
                         _ => const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                      },
+
+                      // Remaining subscription traffic and time
+                      switch (activeProfile) {
+                        AsyncData(value: final profile?) => SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: SubscriptionStatusBar(profile: profile),
+                          ),
+                        ),
+                        _ => const SliverToBoxAdapter(child: SizedBox.shrink()),
                       },
 
                       // Connection button + stats
@@ -603,8 +615,19 @@ class _TopProfileBar extends HookConsumerWidget {
                   runSpacing: 8,
                   children: [
                     if (locationLabel != null) _TopBarMetaChip(icon: Icons.public_rounded, label: locationLabel),
-                    _TopBarMetaChip(icon: Icons.tune_rounded, label: serviceMode.presentShort(t)),
-                    if (modeLabel != null) _TopBarMetaChip(icon: Icons.shield_outlined, label: modeLabel),
+                    // Режим сервиса и цепочка меняются в одном тапе: раньше до
+                    // них было два тапа вниз до быстрых настроек.
+                    _TopBarMetaChip(
+                      icon: Icons.tune_rounded,
+                      label: serviceMode.presentShort(t),
+                      onTap: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
+                    ),
+                    if (modeLabel != null)
+                      _TopBarMetaChip(
+                        icon: Icons.shield_outlined,
+                        label: modeLabel,
+                        onTap: () => context.goNamed('chainOptions'),
+                      ),
                   ],
                 ),
               ],
@@ -663,14 +686,15 @@ _HomeNodeInfo _resolveHomeNode(
 }
 
 class _TopBarMetaChip extends StatelessWidget {
-  const _TopBarMetaChip({required this.icon, required this.label});
+  const _TopBarMetaChip({required this.icon, required this.label, this.onTap});
 
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final child = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
@@ -686,7 +710,22 @@ class _TopBarMetaChip extends StatelessWidget {
             label,
             style: const TextStyle(color: AppTheme.nerpaTextPrimary, fontSize: 12, fontWeight: FontWeight.w600),
           ),
+          if (onTap != null) ...[
+            const Gap(4),
+            const Icon(Icons.chevron_right_rounded, size: 14, color: AppTheme.nerpaTextMuted),
+          ],
         ],
+      ),
+    );
+
+    if (onTap == null) return child;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: child,
       ),
     );
   }
