@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "主页",
-      "quickSettings": "快速设置"
+      "quickSettings": "快速设置",
+      "activeProfile": "当前配置",
+      "status": "状态",
+      "online": "在线",
+      "offline": "离线",
+      "starting": "启动中",
+      "stopping": "停止中",
+      "nodeNotResponding": "节点无响应",
+      "connectionActive": "连接已激活",
+      "connectionStarting": "正在建立连接",
+      "connectionStopping": "正在断开连接",
+      "connectionFailed": "连接失败",
+      "serviceLanChain": "服务 · 局域网 · 链路",
+      "trafficTotal": "总传输量",
+      "uptime": "连接时长",
+      "quickSettingsSubtitle": "快速访问服务模式、局域网和链路",
+      "lanSharingSubtitle": "访问本地代理并分享链接",
+      "chainTitle": "连接链路",
+      "chainSubtitle": "过滤、配置文件和额外安全的顺序"
     },
     "proxies": {
       "title": "代理",

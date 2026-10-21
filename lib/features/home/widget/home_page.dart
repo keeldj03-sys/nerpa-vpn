@@ -18,6 +18,7 @@ import 'package:nerpa_vpn/features/chain/model/chain_enum.dart';
 import 'package:nerpa_vpn/features/connection/model/connection_status.dart';
 import 'package:nerpa_vpn/features/connection/notifier/connection_notifier.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_button.dart';
+import 'package:nerpa_vpn/features/home/widget/connection_failure_reason.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_stats_row.dart';
 import 'package:nerpa_vpn/features/home/widget/connection_timer.dart';
 import 'package:nerpa_vpn/features/home/widget/subscription_status_bar.dart';
@@ -140,6 +141,11 @@ class HomePage extends HookConsumerWidget {
 
                               // How long the tunnel has been up
                               const ConnectionTimer(),
+
+                              const Gap(12),
+
+                              // Why the connection did not come up
+                              const ConnectionFailureReason(),
                             ],
                           ),
                         ),
@@ -429,7 +435,7 @@ class _QuickSettingsBar extends StatelessWidget {
                             ),
                             const Gap(3),
                             Text(
-                              'Сервис · LAN · цепочки',
+                              t.pages.home.serviceLanChain,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -571,7 +577,7 @@ class _TopProfileBar extends HookConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'АКТИВНЫЙ ПРОФИЛЬ',
+                      t.pages.home.activeProfile,
                       style: TextStyle(
                         color: AppTheme.nerpaTextSecondary.withValues(alpha: 0.92),
                         fontSize: 11,
@@ -789,44 +795,44 @@ _TopBarStatusMeta _buildStatusMeta(
     // that stopped answering keeps the tunnel "up" while carrying no traffic.
     // The pill follows the node, not the socket: a dead node is not online.
     if (delay != null && delay > 0 && !ConnectionConst.isValidDelay(delay)) {
-      return const _TopBarStatusMeta(
-        title: 'Статус',
+      return _TopBarStatusMeta(
+        title: t.pages.home.status,
         value: 'No signal',
-        caption: 'Узел не отвечает',
+        caption: t.pages.home.nodeNotResponding,
         color: AppTheme.nerpaError,
       );
     }
 
-    return const _TopBarStatusMeta(
-      title: 'Статус',
-      value: 'Online',
-      caption: 'Подключение активно',
+    return _TopBarStatusMeta(
+      title: t.pages.home.status,
+      value: t.pages.home.online,
+      caption: t.pages.home.connectionActive,
       color: AppTheme.nerpaSuccess,
     );
   }
 
   if (status is Connecting) {
-    return const _TopBarStatusMeta(
-      title: 'Статус',
-      value: 'Старт',
-      caption: 'Подключение запускается',
+    return _TopBarStatusMeta(
+      title: t.pages.home.status,
+      value: t.pages.home.starting,
+      caption: t.pages.home.connectionStarting,
       color: AppTheme.nerpaWarning,
     );
   }
 
   if (status is Disconnecting) {
-    return const _TopBarStatusMeta(
-      title: 'Статус',
-      value: 'Стоп',
-      caption: 'Отключение выполняется',
+    return _TopBarStatusMeta(
+      title: t.pages.home.status,
+      value: t.pages.home.stopping,
+      caption: t.pages.home.connectionStopping,
       color: AppTheme.nerpaWarning,
     );
   }
 
-  return const _TopBarStatusMeta(
-    title: 'Статус',
-    value: 'Offline',
-    caption: 'Нет активного подключения',
+  return _TopBarStatusMeta(
+    title: t.pages.home.status,
+    value: t.pages.home.offline,
+    caption: t.pages.home.connectionFailed,
     color: AppTheme.nerpaTextMuted,
   );
 }

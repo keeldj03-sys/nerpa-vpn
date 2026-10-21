@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "Home",
-      "quickSettings": "Quick settings"
+      "quickSettings": "Quick settings",
+      "activeProfile": "ACTIVE PROFILE",
+      "status": "Status",
+      "online": "Online",
+      "offline": "Offline",
+      "starting": "Starting",
+      "stopping": "Stopping",
+      "nodeNotResponding": "Node is not responding",
+      "connectionActive": "Connection is active",
+      "connectionStarting": "Starting the connection",
+      "connectionStopping": "Disconnecting",
+      "connectionFailed": "Could not connect",
+      "serviceLanChain": "Service · LAN · chain",
+      "trafficTotal": "Total transferred",
+      "uptime": "Uptime",
+      "quickSettingsSubtitle": "Quick access to the service mode, LAN and the chain",
+      "lanSharingSubtitle": "Access to the local proxy and share the link",
+      "chainTitle": "Connection chain",
+      "chainSubtitle": "Order of filtering, the profile and the extra security"
     },
     "proxies": {
       "title": "Proxies",

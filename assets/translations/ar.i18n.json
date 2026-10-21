@@ -109,7 +109,25 @@
   "pages": {
     "home": {
       "title": "الرئيسية",
-      "quickSettings": "الإعدادات السريعة"
+      "quickSettings": "الإعدادات السريعة",
+      "activeProfile": "الملف الشخصي النشط",
+      "status": "الحالة",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "starting": "جارٍ البدء",
+      "stopping": "جارٍ الإيقاف",
+      "nodeNotResponding": "العقدة لا تستجيب",
+      "connectionActive": "الاتصال نشط",
+      "connectionStarting": "جارٍ بدء الاتصال",
+      "connectionStopping": "جارٍ قطع الاتصال",
+      "connectionFailed": "تعذّر الاتصال",
+      "serviceLanChain": "الخدمة · LAN · السلسلة",
+      "trafficTotal": "إجمالي النقل",
+      "uptime": "مدة الاتصال",
+      "quickSettingsSubtitle": "وصول سريع إلى وضع الخدمة و LAN والسلسلة",
+      "lanSharingSubtitle": "الوصول إلى الوكيل المحلي ومشاركة الرابط",
+      "chainTitle": "سلسلة الاتصال",
+      "chainSubtitle": "ترتيب التصفية والملف والحماية الإضافية"
     },
     "proxies": {
       "title": "البروكسيات",

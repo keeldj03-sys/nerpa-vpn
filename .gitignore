@@ -98,3 +98,7 @@ tool_build_core_check.dart
 tool_check_dll.dart
 
 tool_speed_check.dart
+
+tool_add_home_keys.dart
+
+tool_commit_msg.txt

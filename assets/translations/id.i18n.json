@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "Beranda",
-      "quickSettings": "Pengaturan cepat"
+      "quickSettings": "Pengaturan cepat",
+      "activeProfile": "PROFIL AKTIF",
+      "status": "Status",
+      "online": "Terhubung",
+      "offline": "Terputus",
+      "starting": "Memulai",
+      "stopping": "Menghentikan",
+      "nodeNotResponding": "Node tidak merespons",
+      "connectionActive": "Koneksi aktif",
+      "connectionStarting": "Memulai koneksi",
+      "connectionStopping": "Menghentikan koneksi",
+      "connectionFailed": "Gagal terhubung",
+      "serviceLanChain": "Layanan · LAN · rantai",
+      "trafficTotal": "Total ditransfer",
+      "uptime": "Durasi koneksi",
+      "quickSettingsSubtitle": "Akses cepat ke mode layanan, LAN, dan rantai",
+      "lanSharingSubtitle": "Akses ke proxy lokal dan bagikan tautan",
+      "chainTitle": "Rantai koneksi",
+      "chainSubtitle": "Urutan penyaringan, profil, dan keamanan tambahan"
     },
     "proxies": {
       "title": "Proxy",

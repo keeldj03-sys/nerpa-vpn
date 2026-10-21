@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "Inicio",
-      "quickSettings": "Ajustes rápidos"
+      "quickSettings": "Ajustes rápidos",
+      "activeProfile": "PERFIL ACTIVO",
+      "status": "Estado",
+      "online": "En línea",
+      "offline": "Desconectado",
+      "starting": "Iniciando",
+      "stopping": "Deteniendo",
+      "nodeNotResponding": "El nodo no responde",
+      "connectionActive": "Conexión activa",
+      "connectionStarting": "Iniciando la conexión",
+      "connectionStopping": "Desconectando",
+      "connectionFailed": "No se pudo conectar",
+      "serviceLanChain": "Servicio · LAN · cadena",
+      "trafficTotal": "Total transferido",
+      "uptime": "Tiempo de conexión",
+      "quickSettingsSubtitle": "Acceso rápido al modo de servicio, LAN y la cadena",
+      "lanSharingSubtitle": "Acceso al proxy local y compartir el enlace",
+      "chainTitle": "Cadena de conexión",
+      "chainSubtitle": "Orden del filtrado, el perfil y la seguridad adicional"
     },
     "proxies": {
       "title": "Proxies",

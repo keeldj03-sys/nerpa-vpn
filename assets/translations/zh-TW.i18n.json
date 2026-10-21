@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "首頁",
-      "quickSettings": "快速設定"
+      "quickSettings": "快速設定",
+      "activeProfile": "目前設定檔",
+      "status": "狀態",
+      "online": "線上",
+      "offline": "離線",
+      "starting": "啟動中",
+      "stopping": "停止中",
+      "nodeNotResponding": "節點無回應",
+      "connectionActive": "連線已啟用",
+      "connectionStarting": "正在建立連線",
+      "connectionStopping": "正在斷開連線",
+      "connectionFailed": "連線失敗",
+      "serviceLanChain": "服務 · 區域網 · 鏈結",
+      "trafficTotal": "總傳輸量",
+      "uptime": "連線時間",
+      "quickSettingsSubtitle": "快速存取服務模式、區域網與鏈結",
+      "lanSharingSubtitle": "存取本機代理並分享連結",
+      "chainTitle": "連線鏈結",
+      "chainSubtitle": "過濾、設定檔與額外安全的順序"
     },
     "proxies": {
       "title": "代理",

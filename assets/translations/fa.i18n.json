@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "خانه",
-      "quickSettings": "تنظیمات سریع"
+      "quickSettings": "تنظیمات سریع",
+      "activeProfile": "پروفایل فعال",
+      "status": "وضعیت",
+      "online": "آنلاین",
+      "offline": "آفلاین",
+      "starting": "در حال شروع",
+      "stopping": "در حال توقف",
+      "nodeNotResponding": "نود پاسخ نمی‌دهد",
+      "connectionActive": "اتصال فعال است",
+      "connectionStarting": "در حال شروع اتصال",
+      "connectionStopping": "در حال قطع اتصال",
+      "connectionFailed": "اتصال برقرار نشد",
+      "serviceLanChain": "سرویس · LAN · زنجیره",
+      "trafficTotal": "مجموع انتقال‌یافته",
+      "uptime": "مدت اتصال",
+      "quickSettingsSubtitle": "دسترسی سریع به حالت سرویس، LAN و زنجیره",
+      "lanSharingSubtitle": "دسترسی به پروکسی محلی و اشتراک‌گذاری پیوند",
+      "chainTitle": "زنجیره اتصال",
+      "chainSubtitle": "ترتیب فیلترینگ، پروفایل و امنیت اضافی"
     },
     "proxies": {
       "title": "پروکسی‌ها",

@@ -107,7 +107,25 @@
   "pages": {
     "home": {
       "title": "Главная",
-      "quickSettings": "Быстрые настройки"
+      "quickSettings": "Быстрые настройки",
+      "activeProfile": "АКТИВНЫЙ ПРОФИЛЬ",
+      "status": "Статус",
+      "online": "Online",
+      "offline": "Offline",
+      "starting": "Старт",
+      "stopping": "Стоп",
+      "nodeNotResponding": "Узел не отвечает",
+      "connectionActive": "Подключение активно",
+      "connectionStarting": "Подключение запускается",
+      "connectionStopping": "Отключение выполняется",
+      "connectionFailed": "Нет активного подключения",
+      "serviceLanChain": "Сервис · LAN · цепочки",
+      "trafficTotal": "Всего передано",
+      "uptime": "Время работы",
+      "quickSettingsSubtitle": "Быстрый доступ к режиму сервиса, LAN и цепочкам",
+      "lanSharingSubtitle": "Доступ к локальному прокси и обмен ссылкой",
+      "chainTitle": "Цепочка подключения",
+      "chainSubtitle": "Приоритет фильтрации, профиля и дополнительной защиты"
     },
     "proxies": {
       "title": "Прокси",

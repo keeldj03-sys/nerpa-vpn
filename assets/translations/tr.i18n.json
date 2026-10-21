@@ -103,7 +103,25 @@
   "pages": {
     "home": {
       "title": "Ana sayfa",
-      "quickSettings": "Hızlı ayarlar"
+      "quickSettings": "Hızlı ayarlar",
+      "activeProfile": "ETKİN PROFİL",
+      "status": "Durum",
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "starting": "Başlatılıyor",
+      "stopping": "Durduruluyor",
+      "nodeNotResponding": "Düğüm yanıt vermiyor",
+      "connectionActive": "Bağlantı etkin",
+      "connectionStarting": "Bağlantı kuruluyor",
+      "connectionStopping": "Bağlantı kesiliyor",
+      "connectionFailed": "Bağlanılamadı",
+      "serviceLanChain": "Servis · LAN · zincir",
+      "trafficTotal": "Toplam aktarım",
+      "uptime": "Bağlantı süresi",
+      "quickSettingsSubtitle": "Servis moduna, LAN ve zincire hızlı erişim",
+      "lanSharingSubtitle": "Yerel vekil sunucusuna erişim ve bağlantı paylaşımı",
+      "chainTitle": "Bağlantı zinciri",
+      "chainSubtitle": "Filtreleme, profil ve ek güvenlik sırası"
     },
     "proxies": {
       "title": "Proxy'ler",

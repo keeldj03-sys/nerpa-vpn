@@ -75,7 +75,7 @@ class QuickSettingsModal extends HookConsumerWidget {
                                   ),
                                   const Gap(4),
                                   Text(
-                                    'Быстрый доступ к режиму сервиса, LAN и цепочкам',
+                                    t.pages.home.quickSettingsSubtitle,
                                     style: TextStyle(
                                       color: AppTheme.nerpaTextSecondary.withValues(alpha: 0.92),
                                       fontSize: 12,
@@ -114,14 +114,14 @@ class QuickSettingsModal extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(22),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           _GlassSectionHeader(
                             icon: Icons.router_rounded,
                             title: 'LAN sharing',
-                            subtitle: 'Доступ к локальному прокси и обмен ссылкой',
+                            subtitle: t.pages.home.lanSharingSubtitle,
                           ),
-                          Divider(height: 1, indent: 20, endIndent: 20),
+                          const Divider(height: 1, indent: 20, endIndent: 20),
                           const LanSharingPreferenceWidget(showLeading: false),
                         ],
                       ),
@@ -136,15 +136,15 @@ class QuickSettingsModal extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(22),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           _GlassSectionHeader(
                             icon: Icons.alt_route_rounded,
-                            title: 'Цепочка подключения',
-                            subtitle: 'Приоритет фильтрации, профиля и дополнительной защиты',
+                            title: t.pages.home.chainTitle,
+                            subtitle: t.pages.home.chainSubtitle,
                           ),
-                          Divider(height: 1, indent: 20, endIndent: 20),
-                          ChainQuickSettings(),
+                          const Divider(height: 1, indent: 20, endIndent: 20),
+                          const ChainQuickSettings(),
                         ],
                       ),
                     ),
